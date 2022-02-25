@@ -1,0 +1,345 @@
+.body {
+    opacity: 1; 
+    transform: none;
+    font-family: inherit;
+}
+
+.footer {
+    background-color: #f2e2cf;
+    color: #000000;
+    padding: 20px;
+    border-radius: 16px 16px 0px 0px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.row {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: center;
+    position: relative;
+    flex-direction: column;
+    padding: 24px;
+}
+
+.small-background{
+    position: relative;
+    display: flex;
+    max-width: 500px;
+    border-radius: 24px;
+    object-position: center;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    margin: auto;
+}
+
+.column {
+    flex: 50% 1;
+    padding-bottom: 64px;
+}
+
+.main{
+    background-color: rgba(0,0,0,1);
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    padding: 32px 0px 0px 0px;
+    margin: 48px 0px 0px 0px;
+    display: block;
+}
+
+.main-container{
+    overflow-x: hidden;
+    margin: auto;
+    background-color: rgba(0,0,0,1);
+}
+
+.main-card-container{
+    display: flex;
+}
+
+.staking-title {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 54px;
+    line-height: 36px;
+    letter-spacing: -.01em;
+    color: #05070c;
+}
+
+.staking-text {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 32px;
+    letter-spacing: -.01em;
+    color: #05070c;
+    max-width: 800px;
+    float: right;
+    text-align: center;
+}
+
+.container {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-gap: 40px 40px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "Staking Rewards Price"
+        "Staking Rewards Staked"
+        "Pools Pools Pools"
+        "StakedTable StakedTable StakedTable";
+}
+
+@media only screen and (max-width: 1000px){
+    .container {
+        display: block!important;
+        padding: 18px;
+    }
+}
+
+.container, .rewards-container {
+    display: grid;
+    gap: 40px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.Staking {
+    grid-area: Staking;
+}
+
+.Rewards {
+    grid-area: Rewards;
+}
+
+.Price {
+    grid-area: Price;
+}
+
+.Staked {
+    grid-area: Staked;
+}
+
+.wallet-not-connected-card {
+    grid-area: Pools;
+}
+
+.card {
+    display: grid;
+    padding: 66px;
+    background: #bcdbdf;
+    -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
+    border: 1px solid rgba(229,231,235,var(--tw-border-opacity));
+    box-shadow: 0px 3px 13px -1px rgb(100 100 100 / 20%);
+    transition: .3s;
+    border-radius: 30px;
+    opacity: 1;
+    transform: none;
+}
+
+.mini-card {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    background: #bcdbdf;
+    box-shadow: 0px 3px 13px -1px rgb(100 100 100 / 20%);
+    -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
+    border-radius: 30px;
+    height: 168px!important;
+    transition: .3s;
+    height: 100%;
+    opacity: 1;
+    transform: none;
+}
+
+.card:hover{
+    box-shadow: 0 29px 32px rgb(100 100 100 / 20%);
+}
+
+@media only screen and (max-width: 900px){
+    .card {
+        margin-bottom: 24px;
+    }
+}
+
+.mini-card:hover{
+    box-shadow: 0 29px 32px rgb(100 100 100 / 20%);
+}
+
+@media only screen and (max-width: 900px){
+    .mini-card {
+        margin-bottom: 24px;
+    }
+}
+
+.card-title {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 32px;
+    text-align: center;
+    letter-spacing: -.01em;
+    color: #05070c;
+    margin-bottom: 8px;
+}
+
+.number {
+    font-size: 40px;
+    line-height: 40px;
+    text-align: center;
+}
+
+.number, .small-number {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: -.01em;
+    color: #05070c;
+}
+
+.small-number {
+    font-size: 16px;
+    line-height: 24px;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    -webkit-box-pack: justify;
+    margin: 0 auto;
+}
+
+.icon {
+    display: block;
+    margin: auto auto 24px;
+}
+
+.divider {
+    border-top: 1px solid rgba(33,42,75,.1);
+    width: 100%;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.price-card {
+    display: grid;
+    padding: 8px;
+    background: hsla(0,0%,100%,.5);
+    -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
+    border-radius: 30px;
+    border: 1px solid #fff;
+    transition: .3s;
+    height: 168px!important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.price-container {
+    margin: auto;
+}
+
+.chart {
+    margin-bottom: -40px;
+    margin-top: -40px;
+    padding-bottom: 20px;
+}
+
+.maximize-container {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border-radius: 8px;
+    padding: 8px 8px 6px;
+    background: rgba(0,0,0,.05);
+    cursor: pointer;
+    z-index: 100;
+    transition: .2s;
+}
+
+.price-container-bottom {
+    display: flex;
+}
+
+.price-container-top {
+    display: flex;
+}
+
+.price-title {
+    font-size: 18px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    -webkit-box-pack: justify;
+    margin: 0 auto;
+}
+
+.mini-number, .price-number {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    text-align: center;
+    letter-spacing: -.01em;
+    color: #05070c;
+}
+
+.mini-card-title, .price-title {
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: center;
+    letter-spacing: -.01em;
+    color: #05070c;
+}
+
+.mini-card-title {
+    font-size: 16px;
+    margin-top: 16px;
+}
+
+.number-go-up {
+    font-weight: 600;
+    color: #007059;
+}
+
+.not-connected {
+    background: #05070c;
+    border-radius: 8px;
+    font-family: "Maison Neue";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 32px;
+    color: #ffffff;
+    border: none;
+    padding: 8px 0px 8px 0px;
+    cursor: pointer;
+    margin: 0 auto;
+    max-width: 240px;
+    text-align: center;
+    transition: .3s;
+    width: 100%;
+}
+
+@media only screen and (max-width: 900px){
+    .not-connected {
+        max-width: 900px;
+    }
+}
+
+.not-connected:hover{
+    background: rgba(0,0,0,.15);
+}

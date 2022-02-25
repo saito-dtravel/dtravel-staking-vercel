@@ -1,0 +1,155 @@
+element.style {
+  opacity: 1;
+  transform: none;
+}
+
+div {
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: #05070c;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.mobileLogo {
+  display: none;
+}
+
+@media only screen and (max-width: 900px){
+  .mobileLogo {
+    display: inline-block;
+  }
+}
+
+@media only screen and (max-width: 900px){
+  .desktopLogo {
+    display: none;
+  }
+}
+
+.menu-button {
+  border-radius: 100px;
+  background: none;
+  border: none;
+  padding: 16px;
+  margin-top: 4px;
+  transition: .3s;
+  cursor: pointer;
+}
+
+.menu-button img {
+  height: 24px;
+  margin-bottom: -4px;
+}
+
+.menu-button:hover {
+  background: rgba(0,0,0,.05);
+}
+
+@media only screen and (min-width: 900px){
+  .menu-button {
+    display: none;
+  }
+}
+
+.staking-container {
+  background-size: 100% 100%!important;
+  padding-top: 40px;
+  /* padding-bottom: 80px; */
+  background-position: 50%;
+}
+
+.staking-nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  position: relative;
+  z-index: 10;
+}
+
+@media only screen and (max-width: 1200px){
+  .staking-nav-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.staking-nav-contents-container {
+  display: flex;
+}
+
+.staking-nav-tab {
+  font-family: "Maison Neue";
+  font-style: normal;
+  font-size: 16px;
+  line-height: 32px;
+  color: #05070c;
+  background: 0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: .3s;
+  cursor: pointer;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+@media only screen and (max-width: 900px){
+  .staking-nav-tab {
+    display: none;
+  }
+}
+.staking-nav-tab:hover {
+  background: rgba(0,0,0,.05);
+}
+
+.nav-disabled {
+  color: rgba(0,0,0,.2)!important;
+}
+
+.is-active .staking-nav-tab {
+  color: #2c677a;
+}
+
+.staking-nav-wallet-button {
+  font-family: "Maison Neue";
+  font-style: normal;
+  font-size: 18px;
+  line-height: 32px;
+  letter-spacing: -.01em;
+  color: #ffffff;
+  border-radius: 8px;
+  background:  #a32a2f;
+  border: none;
+  padding: 8px 16px;
+  transition: .3s;
+}
+
+@media only screen and (max-width: 900px){
+  .staking-nav-wallet-button {
+    display: none;
+    background: rgba(0,0,0,.05);
+    box-shadow: none;
+  }
+}
+
+.staking-nav-contents-container>button {
+  margin: 8px;
+  display: flex;
+  cursor: pointer;
+}
+
+.staking-nav-wallet-button:hover {
+  box-shadow: none;
+  background:  #a32a2f;
+}
+
+.chart-gradient {
+  position: absolute;
+}
