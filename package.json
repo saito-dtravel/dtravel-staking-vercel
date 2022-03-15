@@ -18,12 +18,14 @@
     "react-icons": "^4.3.1",
     "react-loader-spinner": "^5.1.4",
     "react-native-webview": "^11.17.1",
+    "react-notifications": "^1.7.3",
     "react-redux": "^7.2.6",
     "react-router-dom": "^6.2.1",
     "react-scripts": "^3.0.1",
     "react-webkit": "^0.0.0",
     "styled-components": "^5.3.3",
     "web-vitals": "^2.1.4",
+    "web3": "^1.7.0",
     "web3-eth": "^1.7.0"
   },
   "scripts": {
