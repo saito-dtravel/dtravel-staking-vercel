@@ -17,6 +17,7 @@ const App = () => {
   // const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [open, setOpen] = useState(false);
+  const [wConnect, set_wConnect] = useState();
 
   const DESKTOP_CONNECTORS = {
     MetaMask: injected,
@@ -25,11 +26,11 @@ const App = () => {
     TrustWallet: trustWallet,
   };
   const walletConnectors = DESKTOP_CONNECTORS;
-  const { account, activate, deactivate } = useWeb3React();
+  const { account, activate } = useWeb3React();
 
   const handleConnect = async (currentConnector) => {
     await activate(walletConnectors[currentConnector]);
-    window.localStorage.setItem("account_address", account);
+    set_wConnect(walletConnectors[currentConnector]);
     window.localStorage.setItem("CurrentWalletConnect", currentConnector);
     handleClose();
   };
@@ -47,7 +48,7 @@ const App = () => {
     <>
       <Box display={"flex"} flexDirection={"column"} alignItems="center" >
         <BrowserRouter>
-          <Header modalFlag={open} setModal={setOpen}></Header>
+          <Header  setModal={setOpen} wConnect={wConnect}></Header>
           <Routes>
             <Route path="/" element={<Content modalFlag={open} setModal={setOpen} />} />
             <Route path="/reward" element={<Reward modalFlag={open} setModal={setOpen} />} />

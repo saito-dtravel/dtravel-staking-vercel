@@ -5,81 +5,116 @@ import styled from "styled-components";
 import Staked01 from "../../assets/stake.svg"
 import Reward01 from "../../assets/rewards.svg";
 import Mark01 from "../../assets/dtravle_mark01.png"
-import Triangle01 from "../../assets/triangle.png"
-import { IoMdResize } from "react-icons/io";
 import { useWeb3React } from "@web3-react/core";
 import { ethers } from "ethers";
 import { CONTRACTS } from "../../utils/constants";
-import { MC_ABI, SMC_ABI, EMC_ABI, LP_ABI } from "../../utils/abi";
+import { MC_ABI, SMC_ABI, LP_MC_ABI, LP_SMC_ABI, FREE_TRVL_ABI } from "../../utils/abi";
 import CustomButton from '../elements/buttons';
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import { GiCancel } from 'react-icons/gi';
 import { useNavigate } from "react-router-dom";
+import Web3 from 'web3'
+import Slider from '@material-ui/core/Slider';
+import { makeStyles } from '@material-ui/core/styles';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const Content = ({ modalFlag, setModal }) => {
     let navigate = useNavigate();
-    const { account, library } = useWeb3React();
+    const { account, active, library } = useWeb3React();
     const [total_stake, set_total_stake] = useState(0);
     const [user_total_stake, set_user_total_stake] = useState(0);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [open, setOpen] = useState(false);
+    const handleOpen1 = () => setOpen1(true);
+    const handleClose1 = () => setOpen1(false);
+    const [open1, setOpen1] = useState(false);
+    const handleOpen2 = () => setOpen2(true);
+    const handleClose2 = () => setOpen2(false);
+    const [open2, setOpen2] = useState(false);
     const connect_wallet = () => {
         setModal(!modalFlag);
     }
-    const account_t = window.localStorage.getItem("account_address");
     const [amount, set_amount] = useState(0);
+    const [amount_free, set_amount_free] = useState(0);
     const [duration, set_duration] = useState(0);
     const [locked, set_locked] = useState(false);
     const [mc_apr, set_mc_apr] = useState(0);
-    const [lp_token_flag, set_lp_token_flag] = useState(false);
+    const [lp_apr, set_lp_apr] = useState(0);
+    const [flag_flag_staking_modal, set_flag_staking_modal] = useState(0);
     const [total_lp_stake, set_total_lp_stake] = useState(0);
-    const [flag_account, set_flag_account] = useState(false);
     const [rewards, set_rewards] = useState(0);
+    const [free_trvl_staked_value, set_free_trvl_staked_value] = useState(0);
     const [flag_spin_load, set_spin_load] = useState(false);
+    const [flag_spin_load_free, set_spin_load_free] = useState(false);
+    const [trvl_pools, set_trvl_pools] = useState(null);
+    const [trvllp_pools, set_trvllp_pools] = useState(null);
+    const [claim_rewards, set_claim_rewards] = useState(0);
     const MC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.MC_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
     const SMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
-    const EMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.EMC_TOKEN, EMC_ABI, library.getSigner()) : null), [library]);
-    const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_ABI, library.getSigner()) : null), [library]);
-    const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, SMC_ABI, library.getSigner()) : null), [library]);
+    const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_MC_ABI, library.getSigner()) : null), [library]);
+    const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, LP_SMC_ABI, library.getSigner()) : null), [library]);
+    const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
 
-    useEffect(() => {
-        if (account_t === 'undefined' || account_t === null) {
-            set_flag_account(false);
-        }
-        else {
-            set_flag_account(true);
-            get_total_stake();
-            get_total_lp_stake();
-            get_mc_apr();
-            get_rewards();
-        }
-    });
+    const useStyles = makeStyles((theme) => ({
+        root: {
+            width: 250,
+        },
+        margin: {
+            height: theme.spacing(3),
+        },
+    }));
+
+    const marks = [
+        {
+            value: 0,
+            label: '0 weeks',
+        },
+        {
+            value: 52,
+            label: '52 weeks',
+        },
+    ];
+
+    function valuetext(value) {
+        return `${value} weeks`;
+    }
+
+    const handleSliderChange = (event, newValue) => {
+        set_duration(newValue);
+    };
 
     const stake = async () => {
         try {
             set_spin_load(true);
-            const amount_wei = amount * Math.pow(10, 18);
+            let amount_wei = amount * Math.pow(10, 18);
             const approve = await MC_Contract.approve(CONTRACTS.SMC_TOKEN, "0x" + amount_wei.toString(16));
             await approve.wait();
             var t_duration;
             if (locked === true) {
-                t_duration = duration;
+                t_duration = duration * 60 * 60 * 24 * 7;
             }
             else {
                 t_duration = 0;
             }
-            const stake_mc = await SMC_Contract.deposit("0x" + amount_wei.toString(16), t_duration, account);
+            const stake_mc = await SMC_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
             await stake_mc.wait();
-            get_total_stake();
-            set_spin_load(false);
-            get_rewards();
-            set_amount(0);
-            handleClose();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
+            setTimeout(() => {
+                get_total_stake();
+                set_spin_load(false);
+                get_rewards();
+                get_mc_apr();
+                set_amount(0);
+                set_locked(false);
+                handleClose();
+            }, 3000);
 
         }
         catch (err) {
             console.log(err);
+            NotificationManager.error('Failed. Try it again.', 'Hi.', 3000);
             set_spin_load(false);
             set_locked(false);
             set_amount(0);
@@ -90,26 +125,31 @@ const Content = ({ modalFlag, setModal }) => {
     const stake_lp = async () => {
         try {
             set_spin_load(true);
-            const amount_wei = amount * Math.pow(10, 18);
+            let amount_wei = amount * Math.pow(10, 18);
             const approve = await LP_Contract.approve(CONTRACTS.SMC_LP_Token, "0x" + amount_wei.toString(16));
             await approve.wait();
             var t_duration;
             if (locked === true) {
-                t_duration = duration;
+                t_duration = duration * 60 * 60 * 24 * 7;
             }
             else {
                 t_duration = 0;
             }
-            const stake_mc = await SMC_LP_Contract.deposit("0x" + amount_wei.toString(16), t_duration, account);
+            const stake_mc = await SMC_LP_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
             await stake_mc.wait();
-            get_total_lp_stake();
-            set_spin_load(false);
-            set_amount(0);
-            get_rewards();
-            handleClose();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
+            setTimeout(() => {
+                get_total_lp_stake();
+                set_spin_load(false);
+                get_lp_apr();
+                set_amount(0);
+                get_rewards();
+                handleClose();
+            }, 3000);
         }
         catch (err) {
             console.log(err);
+            NotificationManager.error('Failed. Try it again.', 'Hi.', 3000);
             set_spin_load(false);
             set_locked(false);
             set_amount(0);
@@ -117,11 +157,47 @@ const Content = ({ modalFlag, setModal }) => {
         }
     }
 
+    const stake_free = async () => {
+        try {
+            set_spin_load(true);
+            let amount_wei = amount * Math.pow(10, 18);
+            const approve = await MC_Contract.approve(CONTRACTS.FREE_TRVL, "0x" + amount_wei.toString(16));
+            await approve.wait();
+            const stake_mc = await FREE_TRVL_CONTRACT.stake("0x" + amount_wei.toString(16));
+            await stake_mc.wait();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
+            setTimeout(() => {
+                handleClose();
+                get_free_trvl_staked_value();
+                set_spin_load(false);
+                set_amount(0);
+            }, 3000);
+        }
+        catch (err) {
+            console.log(err);
+            NotificationManager.error('Failed. Try it again.', 'Hi.', 3000);
+            get_free_trvl_staked_value();
+            set_spin_load(false);
+            set_amount(0);
+            handleClose();
+        }
+    }
+
+    const get_free_trvl_staked_value = async () => {
+        try {
+            let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
+            set_free_trvl_staked_value(parseInt(t_value._hex) / Math.pow(10, 18));
+        }
+        catch (err) {
+            console.log(err);
+        }
+    };
+
     const get_mc_apr = async () => {
         try {
             let locked1 = await SMC_Contract.getTotalDeposit(account);
             let total = await SMC_Contract.balanceOf(account);
-            let apr = (total / locked1 * 100).toFixed(2);
+            let apr = (parseInt(total._hex) / parseInt(locked1) * 100).toFixed(2);
             set_mc_apr(apr);
         }
         catch (err) {
@@ -129,24 +205,45 @@ const Content = ({ modalFlag, setModal }) => {
         }
     }
 
-    const get_rewards = async() => {
+
+    const get_lp_apr = async () => {
         try {
-            let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
-            let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
-            set_rewards(((parseInt(t_rewards._hex)+parseInt(t_lp_rewards._hex))/Math.pow(10, 18)).toFixed(2));
+            let locked1 = await SMC_LP_Contract.getTotalDeposit(account);
+            let total = await SMC_LP_Contract.balanceOf(account);
+            let apr = (parseInt(total._hex) / parseInt(locked1) * 100).toFixed(2);
+            set_lp_apr(apr);
         }
         catch (err) {
             console.log(err);
         }
     }
 
+    const get_rewards = async () => {
+        try {
+            let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
+            // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
+            set_rewards((parseInt(t_rewards._hex) / Math.pow(10, 18)).toFixed(2));
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    const get_total_staked_amount = async () => {
+        window.web3 = new Web3(window.web3.currentProvider);
+        const mc_contract = new window.web3.eth.Contract(MC_ABI, CONTRACTS.MC_TOKEN);
+        const t_value = await mc_contract.methods.balanceOf(CONTRACTS.SMC_TOKEN).call();
+        // console.log(t_value)
+        set_total_stake((parseInt(t_value) / Math.pow(10, 18)).toFixed(2));
+    }
+
     const get_total_stake = async () => {
         try {
-            let t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
-            let user_t_value = await SMC_Contract.getTotalDeposit(account);
-            set_total_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(3));
-            set_user_total_stake((parseInt(user_t_value._hex) / Math.pow(10, 18)).toFixed(3));
-
+            const t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
+            const user_t_value = await SMC_Contract.getTotalDeposit(account);
+            const user_t_free_value = await FREE_TRVL_CONTRACT.balanceOf(account);
+            set_total_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(2));
+            set_user_total_stake(((parseInt(user_t_value._hex) + parseInt(user_t_free_value._hex)) / Math.pow(10, 18)).toFixed(2));
         }
         catch (err) {
             console.log(err);
@@ -156,17 +253,33 @@ const Content = ({ modalFlag, setModal }) => {
     const get_total_lp_stake = async () => {
         try {
             let t_value = await SMC_LP_Contract.balanceOf(account);
-            set_total_lp_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(3));
+            set_total_lp_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(2));
         }
         catch (err) {
             console.log(err);
         }
     }
 
-    const unstake = async () => {
+    const unstake = async (index) => {
         try {
-            const unstake_mc = await SMC_Contract.withdraw(0, account);
+            const unstake_mc = await SMC_Contract.withdraw(index, account);
             await unstake_mc.wait();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
+            get_total_stake();
+            get_rewards();
+            get_total_lp_stake();
+
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    const unstake_lp = async (index) => {
+        try {
+            const unstake_mc = await SMC_LP_Contract.withdraw(index, account);
+            await unstake_mc.wait();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
             get_total_stake();
             get_rewards();
             get_total_lp_stake();
@@ -176,15 +289,73 @@ const Content = ({ modalFlag, setModal }) => {
         }
     }
 
+    const unstake_free = async () => {
+        try {
+            set_spin_load_free(true);
+            const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x"+(amount_free*Math.pow(10,18)).toString(16));
+            await unstake_free1.wait();
+            NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
+            setTimeout(() => {
+                handleClose2();
+                get_free_trvl_staked_value();
+                set_spin_load_free(false);
+                set_amount_free(0);
+            }, 3000);
+        }
+        catch (err) {
+            console.log(err);
+            NotificationManager.error('Failed. Try it again.', 'Hi.', 3000);
+            set_spin_load_free(false);
+            get_free_trvl_staked_value();
+            set_amount_free(0);
+            handleClose2();
+        }
+    }
+
+
+    const get_claimRewads = async () => {
+        try {
+            let claim_rewards1 = await SMC_Contract.totalClaimReward();
+            let lp_claim_rewards = await SMC_LP_Contract.totalClaimReward();
+            let total = ((parseInt(claim_rewards1._hex) + parseInt(lp_claim_rewards)) / Math.pow(10, 18)).toFixed(2);
+
+            set_claim_rewards(total);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    const get_pools = async () => {
+        const trvl_pools = await SMC_Contract.getDepositsOf(account);
+        const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
+        // console.log('mc_pools', trvl_pools);
+        set_trvl_pools(trvl_pools);
+        set_trvllp_pools(trvllp_pools);
+    }
+
+    useEffect(() => {
+        if (active === false) {
+        }
+        else {
+            get_total_stake();
+            get_total_lp_stake();
+            get_mc_apr();
+            get_lp_apr();
+            get_rewards();
+            get_pools();
+            get_claimRewads();
+            get_free_trvl_staked_value();
+        }
+        get_total_staked_amount();
+    }, [active]);
+
     return (
         <StyledComponent>
             <RewardText>
                 <LeftText01>
                     Rewards
                 </LeftText01>
-                {/* <RightText01>
-                    The Merit Circle DAO offers two core pools. Variable locking for up to twelve months is available for MC and LP staking.
-                </RightText01> */}
             </RewardText>
             <CenterPart>
                 <Left01>
@@ -201,19 +372,12 @@ const Content = ({ modalFlag, setModal }) => {
                     </Box>
                     <Box display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} width="60%">
                         {
-
-                            flag_account ?
+                            active ?
                                 <>
                                     <ConnectWalletBtn01 onClick={() => {
                                         window.scrollTo(0, document.body.scrollHeight);
                                     }}>
                                         Stake
-                                    </ConnectWalletBtn01>
-                                    <Box display={"flex"} flex="0.1"></Box>
-                                    <ConnectWalletBtn01 onClick={() => {
-                                        unstake();
-                                    }}>
-                                        UnStake
                                     </ConnectWalletBtn01>
                                 </> :
                                 <>
@@ -245,9 +409,9 @@ const Content = ({ modalFlag, setModal }) => {
                     <Box display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} width="60%">
                         {
 
-                            flag_account ?
+                            active ?
                                 <>
-                                    <ConnectWalletBtn01 onClick={()=>{
+                                    <ConnectWalletBtn01 onClick={() => {
                                         navigate('/reward');
                                         window.scrollTo(0, 0);
                                     }}>
@@ -264,7 +428,7 @@ const Content = ({ modalFlag, setModal }) => {
                 </Center01>
                 <Right01>
                     <Part01 display={"flex"} position={"relative"} flex={"1"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="100%">
-            
+
                         <GraphInfoBox>
                             <Box display={"flex"} flex="1" fontSize={"18px"} justifyContent={"center"} alignItems={"center"} >TRVL Price</Box>
                             <Box display={"flex"} flex="1" fontSize={"24px"} justifyContent={"center"} alignItems={"center"} fontWeight={"600"}>$ 1</Box>
@@ -285,14 +449,14 @@ const Content = ({ modalFlag, setModal }) => {
                             Total Claimed Amount
                         </SmText03>
                         <Bgtext02>
-                            $ 0.00
+                            $ {claim_rewards}
                         </Bgtext02>
                     </Part01>
 
                 </Right01>
             </CenterPart>
             {
-                flag_account ?
+                active ?
                     <>
                         {/* <ConnectWalletBtn01>
                             {account_t.slice(0, 6) + "..." + account_t.slice(-4)}
@@ -306,11 +470,11 @@ const Content = ({ modalFlag, setModal }) => {
                         </DownPart>
                     </>
             }
-            {flag_account ?
+            {active ?
                 <>
                     <RewardText marginTop={"5%"}>
                         <LeftText01>
-                            Pools
+                            Core Pools
                         </LeftText01>
                     </RewardText>
                     <PoolsPart>
@@ -328,20 +492,23 @@ const Content = ({ modalFlag, setModal }) => {
                         </Row01>
                         <Row02>
                             <Box display={"flex"} flex="1" alignItems={"center"} >
-                                <img />TRVL
+                                <img alt="" />TRVL
                             </Box>
                             <Box display={"flex"} flex="1" alignItems={"center"} >
                                 $ {total_stake * 1}
                             </Box>
                             <Box display={"flex"} flex="1" alignItems={"center"} >
-                                {mc_apr!="NaN" ? mc_apr : 100}%
+                                {mc_apr !== "NaN" ? mc_apr : 100}%
                             </Box>
                             <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
                                 <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
-                                <Box display={"1"} width={"30%"}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
+                                <Box display={"1"} width={"30%"} onClick={() => {
+                                    handleOpen1();
+                                    set_flag_staking_modal(0);
+                                }}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
                                 <Box display={"1"} width={"30%"} onClick={() => {
                                     handleOpen();
-                                    set_lp_token_flag(false);
+                                    set_flag_staking_modal(0);
                                 }}><CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
                             </Box>
                         </Row02>
@@ -353,22 +520,220 @@ const Content = ({ modalFlag, setModal }) => {
                                 $ {total_lp_stake * 1}
                             </Box>
                             <Box display={"flex"} flex="1" alignItems={"center"} >
-                                104.421%
+                                {lp_apr !== "NaN" ? lp_apr : 100}%
                             </Box>
                             <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
                                 <Box display={"1"} width={"30%"}>
                                     <a target="_blank" rel="noopener noreferrer" href="https://v2.info.uniswap.org/pair/0xccb63225a7b19dcf66717e4d40c9a72b39331d61"><CustomButton str={"Buy LP"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></a></Box>
-                                <Box display={"1"} width={"30%"}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
+                                <Box display={"1"} width={"30%"} onClick={() => {
+                                    handleOpen1();
+                                    set_flag_staking_modal(1);
+                                }}>
+                                    <CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton>
+                                </Box>
                                 <Box display={"1"} width={"30%"} onClick={() => {
                                     handleOpen();
-                                    set_lp_token_flag(true);
+                                    set_flag_staking_modal(1);
                                 }}>
-                                    <CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
+                                    <CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton>
+                                </Box>
                             </Box>
                         </Row03>
+                        <Row02 marginBottom={"5%"}>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                <img alt="" />Free TRVL
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                $ {free_trvl_staked_value * 1}
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                100%
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
+                                <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
+                                <Box display={"1"} width={"30%"} onClick={() => {
+                                    // handleOpen1();
+                                    // set_flag_staking_modal(2);
+                                }}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
+                                <Box display={"1"} width={"30%"} onClick={() => {
+                                    handleOpen();
+                                    set_flag_staking_modal(2);
+                                }}><CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
+                            </Box>
+                        </Row02>
                     </PoolsPart></> :
                 <></>
             }
+
+
+            {active ?
+                <>
+                    <RewardText marginTop={"5%"}>
+                        <LeftText01>
+                            Pools
+                        </LeftText01>
+                    </RewardText>
+                    <PoolsPart>
+                        <Row01>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Pool
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Amount Staked
+                            </Box>
+                            <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                Lock Date
+                            </Box>
+                            <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                Unlock Date
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                            </Box>
+                        </Row01>
+                        {
+                            trvl_pools && trvl_pools.map((pool, index) => {
+                                return (
+                                    <Row02 key={index}>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} >
+                                            <img alt="" />TRVL Pool
+                                        </Box>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} >
+                                            $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                            {
+                                                new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
+                                            }
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                            {
+                                                new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                            }
+                                        </Box>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent="center" width={"100%"}>
+                                            {
+                                                Date.now() > (parseInt(pool.end._hex) * 1000) ?
+                                                    <>
+                                                        <Box display={"1"} width={"40%"} onClick={() => {
+                                                            unstake(index);
+                                                        }}>
+                                                            <CustomButton
+                                                                str={"Unlock"}
+                                                                width={"100%"}
+                                                                height={"30px"}
+                                                                color={"black"}
+                                                                bgcolor={"white"}
+                                                                fsize={"16px"}
+                                                                fweight={"600"}
+                                                                bradius={"8px"}
+                                                            >
+                                                            </CustomButton>
+                                                        </Box>
+                                                    </> : <></>
+                                            }
+                                        </Box>
+                                    </Row02>
+                                )
+
+                            })
+                        }
+
+                        {
+                            trvllp_pools && trvllp_pools.map((pool, index) => {
+                                return (
+                                    <Row02 key={index}>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} >
+                                            <img alt="" />TRVL/LP Pool
+                                        </Box>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} >
+                                            $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                            {
+                                                new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
+                                            }
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                            {
+                                                new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                            }
+                                        </Box>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"center"} width={"100%"} >
+                                            {
+                                                Date.now() > (parseInt(pool.end._hex) * 1000) ?
+                                                    <>
+                                                        <Box display={"1"} width={"40%"} onClick={() => {
+                                                            unstake_lp(index);
+                                                        }}>
+                                                            <CustomButton
+                                                                str={"Unlock"}
+                                                                width={"100%"}
+                                                                height={"30px"}
+                                                                color={"black"}
+                                                                bgcolor={"white"}
+                                                                fsize={"16px"}
+                                                                fweight={"600"}
+                                                                bradius={"8px"}>
+                                                            </CustomButton>
+                                                        </Box>
+                                                    </> : <></>
+                                            }
+                                        </Box>
+                                    </Row02>
+                                )
+
+                            })
+                        }
+                        {
+                            free_trvl_staked_value === 0 ? <></> :
+                                <Row02>
+                                    <Box display={"flex"} flex="1" alignItems={"center"} >
+                                        <img alt="" />Free TRVL Pool
+                                    </Box>
+                                    <Box display={"flex"} flex="1" alignItems={"center"} >
+                                        $ {free_trvl_staked_value}
+                                    </Box>
+                                    <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                        No Lock Time
+                                    </Box>
+                                    <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                        {
+                                            new Date().toLocaleDateString("en-US") + " "
+                                            + new Date().toLocaleTimeString("en-US")
+                                        }
+                                    </Box>
+                                    <Box display={"flex"} flex="1" alignItems={"center"} justifyContent="center" width={"100%"}>
+                                        <Box display={"1"} width={"40%"} onClick={() => {
+                                            handleOpen2();
+                                        }}>
+                                            <CustomButton
+                                                str={"Unlock"}
+                                                width={"100%"}
+                                                height={"30px"}
+                                                color={"black"}
+                                                bgcolor={"white"}
+                                                fsize={"16px"}
+                                                fweight={"600"}
+                                                bradius={"8px"}
+                                            >
+                                            </CustomButton>
+                                        </Box>
+
+                                    </Box>
+                                </Row02>
+                        }
+
+
+
+                        <Row03></Row03>
+                    </PoolsPart></> :
+                <></>
+            }
+
             <Modal open={open} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
                 <ModalBox>
                     <CancelBox01 onClick={() => {
@@ -382,36 +747,82 @@ const Content = ({ modalFlag, setModal }) => {
                     </CancelBox01>
                     <TitleText01>
                         <img src={Mark01} width={"30px"} height={"30px"} alt=""></img>
-                        {'\u00a0'}{'\u00a0'}{!lp_token_flag ? "TRVL" : "TRVL/ETH Uniswap LP"}
+                        {'\u00a0'}{'\u00a0'}{flag_flag_staking_modal === 0 ? "TRVL" : flag_flag_staking_modal === 1 ? "TRVL/ETH Uniswap LP" : "Free TRVL"}
                     </TitleText01>
-                    <SelectDuration>
+                    {flag_flag_staking_modal === 2 ? <></> : <SelectDuration>
                         <FlexibleBox onClick={() => {
+                            if (flag_spin_load === true) {
+                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                return;
+                            }
                             set_locked(false);
-                        }} locked={locked}>Flexible</FlexibleBox>
+                        }} locked={locked ? 1 : 0}>Flexible</FlexibleBox>
                         <LockedBox onClick={() => {
+                            if (flag_spin_load === true) {
+                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                return;
+                            }
                             set_locked(true);
-                        }} locked={locked}>Locked</LockedBox>
-                    </SelectDuration>
+                        }} locked={locked ? 1 : 0}>Locked</LockedBox>
+                    </SelectDuration>}
+
                     <SmText04 >
                         Amount
                     </SmText04>
                     <InputAmount component={"input"} value={amount} type={'number'} onChange={(e) => {
+                        if (flag_spin_load === true) {
+                            NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                            return;
+                        }
                         set_amount(e.target.value);
                     }}></InputAmount>
                     {locked ? <>
-                        <SmText04>
-                            Duration(weeks)
-                        </SmText04>
-                        <InputAmount component={"input"} value={duration} type={'number'} onChange={(e) => {
+                        <Box display={"flex"} width={"100%"}>
+                            <Box display={"flex"} flex="1" width={"100%"}>
+                                <SmText04>
+                                    Lock for : ({duration} weeks)
+                                </SmText04></Box>
+                            <Box display={"flex"} flex="1" width={"100%"} >
+                                <SmText04 justifyContent={"flex-end"}>
+                                    Weight : ({(1 + duration / 52).toFixed(2)})
+                                </SmText04></Box>
+                        </Box>
+                        <Slider
+                            defaultValue={0}
+                            getAriaValueText={valuetext}
+                            aria-labelledby="discrete-slider-always"
+                            // step={10}
+                            value={duration}
+                            marks={marks}
+                            max={52}
+                            valueLabelDisplay="on"
+                            onChange={handleSliderChange}
+                        />
+                        {/* <InputAmount component={"input"} value={duration} type={'number'} onChange={(e) => {
                             set_duration(e.target.value);
-                        }}></InputAmount>
+                        }}></InputAmount> */}
                     </> : <></>}
                     <Box display={"flex"} width={"100%"} marginTop={"5%"} position={"relative"} onClick={() => {
-                        if (lp_token_flag === false) {
+                        if (flag_flag_staking_modal === 0) {
+                            if (flag_spin_load === true) {
+                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                return;
+                            }
                             stake();
                         }
-                        else {
+                        else if (flag_flag_staking_modal === 1) {
+                            if (flag_spin_load === true) {
+                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                return;
+                            }
                             stake_lp();
+                        }
+                        else if (flag_flag_staking_modal === 2) {
+                            if (flag_spin_load === true) {
+                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                return;
+                            }
+                            stake_free();
                         }
                     }}>
                         {flag_spin_load ?
@@ -426,6 +837,103 @@ const Content = ({ modalFlag, setModal }) => {
                     </Box>
                 </ModalBox>
             </Modal>
+            <Modal open={open1} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+                <ModalBox>
+                    <CancelBox01 onClick={() => {
+                        handleClose1();
+                        set_spin_load(false);
+                    }}>
+                        <GiCancel></GiCancel>
+                    </CancelBox01>
+                    <TitleText01>
+                        <img src={Mark01} width={"30px"} height={"30px"} alt=""></img>
+                        {'\u00a0'}{'\u00a0'}{flag_flag_staking_modal === 0 ? "TRVL" : flag_flag_staking_modal === 1 ? "TRVL/ETH Uniswap LP" : "Free TRVL"}
+                    </TitleText01>
+                    <TitleText01 marginTop={"8%"}>
+                        Details
+                    </TitleText01>
+                    <TitleText02 marginTop={"5%"}>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-start"}>TVL</Box>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-end"}>$</Box>
+                    </TitleText02>
+                    <TitleText02 marginTop={"3%"}>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-start"}>Weight</Box>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-end"}>20%</Box>
+                    </TitleText02>
+                    <TitleText02 marginTop={"3%"}>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-start"}>Pending rewards</Box>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-end"}>0.00 MC</Box>
+                    </TitleText02>
+                    <TitleText02 marginTop={"3%"}>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-start"}>Pool APR</Box>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-end"}>%</Box>
+                    </TitleText02>
+                    <TitleText02 marginTop={"3%"}>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-start"}>My liquidity</Box>
+                        <Box display={"flex"} flex={"1"} justifyContent={"flex-end"}>0.00 MC</Box>
+                    </TitleText02>
+                    <Box display={"flex"} width={"100%"} marginTop={"5%"} position={"relative"} onClick={() => {
+                        if (flag_flag_staking_modal === false) {
+                            // stake();
+                        }
+                        else {
+                            // stake_lp();
+                        }
+                    }}>
+                        {flag_spin_load ?
+                            <Box display={"flex"} position={"absolute"} left={"20%"} justifyContent={"center"} alignItems={"center"} top="10%">
+                                <TailSpin color="white" height={35} width={35} />
+                            </Box>
+                            :
+                            <></>
+                        }
+                        <CustomButton str={"Stake"} width={"100%"} height={"50px"} color={"white"} bgcolor={"#A32A2F"} fsize={"16px"} fweight={"600"} bradius={"8px"} />
+                    </Box>
+                </ModalBox>
+            </Modal>
+            <Modal open={open2} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+                <ModalBox>
+                    <CancelBox01 onClick={() => {
+                        handleClose2();
+                        set_spin_load_free(false);
+                        set_amount_free(0);
+                        NotificationManager.error('Cancelled. Try it again.', 'Hi.', 3000);
+                    }}>
+                        <GiCancel></GiCancel>
+                    </CancelBox01>
+                    <TitleText01>
+                        <img src={Mark01} width={"30px"} height={"30px"} alt=""></img>
+                        {'\u00a0'}{'\u00a0'}Free TRVL
+                    </TitleText01>
+                    <SmText04 >
+                        Amount
+                    </SmText04>
+                    <InputAmount component={"input"} value={amount_free} type={'number'} onChange={(e) => {
+                        if (flag_spin_load_free === true) {
+                            NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                            return;
+                        }
+                        set_amount_free(e.target.value);
+                    }}></InputAmount>
+                    <Box display={"flex"} width={"100%"} marginTop={"5%"} position={"relative"} onClick={() => {
+                        if (flag_spin_load_free === true) {
+                            NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                            return;
+                        }
+                        unstake_free();
+                    }}>
+                        {flag_spin_load_free ?
+                            <Box display={"flex"} position={"absolute"} left={"20%"} justifyContent={"center"} alignItems={"center"} top="10%">
+                                <TailSpin color="white" height={35} width={35} />
+                            </Box>
+                            :
+                            <></>
+                        }
+                        <CustomButton str={"Unstake"} width={"100%"} height={"50px"} color={"white"} bgcolor={"#A32A2F"} fsize={"16px"} fweight={"600"} bradius={"8px"} />
+                    </Box>
+                </ModalBox>
+            </Modal>
+            <NotificationContainer />
         </StyledComponent>
     );
 }
@@ -525,7 +1033,19 @@ const TitleText01 = styled(Box)`
   font-size: 24px;
   line-height: 100%;
   color: #05070c;
+`
 
+const TitleText02 = styled(Box)`
+  display: flex;
+  flex:1;
+  align-items: center;
+  font-family: "Inter",sans-serif!important;
+  font-style: normal;
+  letter-spacing: -.01em;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 100%;
+  color: #05070c;
 `
 
 const ModalBox = styled(Box)`
@@ -603,7 +1123,7 @@ const Row03 = styled(Box)`
     width: 90%;
     border-top: 1px solid rgb(255 255 255 /50%);
     padding-top: 2%;
-    margin-bottom: 5%;
+    /* margin-bottom: 5%; */
 `
 
 const StyledComponent = styled(Box)`
@@ -630,19 +1150,19 @@ const LeftText01 = styled(Box)`
     letter-spacing: -.01em;
     color: #05070c;
 `
-const RightText01 = styled(Box)`
-    display: flex;
-    flex: 1;
-    font-family: "Inter",sans-serif;
-    font-style: normal;
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 32px;
-    letter-spacing: -.01em;
-    color: #05070c;
-    max-width: 560px;
-    float: right;
-`
+// const RightText01 = styled(Box)`
+//     display: flex;
+//     flex: 1;
+//     font-family: "Inter",sans-serif;
+//     font-style: normal;
+//     font-weight: 400;
+//     font-size: 24px;
+//     line-height: 32px;
+//     letter-spacing: -.01em;
+//     color: #05070c;
+//     max-width: 560px;
+//     float: right;
+// `
 
 const CenterPart = styled(Box)`
     display: flex;
@@ -779,11 +1299,11 @@ const SmText03 = styled(Box)`
     color: white;
 `
 
-const GraphBox = styled(Box)`
-    display: flex;
-    flex: 2;
+// const GraphBox = styled(Box)`
+//     display: flex;
+//     flex: 2;
 
-`
+// `
 
 const GraphInfoBox = styled(Box)`
     display: flex;
@@ -843,26 +1363,26 @@ const SmText02 = styled(Box)`
     color: white;
 `
 
-const SizeBox = styled(Box)`
-    display: flex;
-    position: absolute;
-    right: 5%;
-    top: 10%;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    padding: 8px 8px 6px;
-    background: rgba(0,0,0,.3);
-    color: white;
-    cursor: pointer;
-    z-index: 100;
-    transition: .2s;
-    &:hover{
-        box-shadow: 0 10px 10px rgb(0 0 0 / 30%);
-        cursor: pointer;
-        transition: .2s;
-        background: rgba(0,0,0,.5);
-    }
-`
+// const SizeBox = styled(Box)`
+//     display: flex;
+//     position: absolute;
+//     right: 5%;
+//     top: 10%;
+//     justify-content: center;
+//     align-items: center;
+//     border-radius: 8px;
+//     padding: 8px 8px 6px;
+//     background: rgba(0,0,0,.3);
+//     color: white;
+//     cursor: pointer;
+//     z-index: 100;
+//     transition: .2s;
+//     &:hover{
+//         box-shadow: 0 10px 10px rgb(0 0 0 / 30%);
+//         cursor: pointer;
+//         transition: .2s;
+//         background: rgba(0,0,0,.5);
+//     }
+// `
 
 export default Content;
