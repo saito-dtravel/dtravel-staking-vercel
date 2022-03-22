@@ -155,129 +155,189 @@ const Reward = () => {
 
     return (
         <StyledComponent>
-            <RewardText>
-                <LeftText01>
-                    Rewards
-                </LeftText01>
-                <RightText01>
-                    Staking rewards enter a 12 month vesting period after claiming. TRVL tokens are non-transferable and only used for accounting purposes.
-                </RightText01>
-            </RewardText>
-            <PoolsPart>
-                <Row01>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        Care Pools
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        Amount Staked
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        Claimable Rewards
-                    </Box>
-                    <Box display={"flex"} flex="0.5" alignItems={"center"} ></Box>
-                </Row01>
-                <Row02>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        <img />TRVL
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        $ {user_total_stake * 1}
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        {rewards} TRVL
-                    </Box>
-                    <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
-                        <Box display={"1"} width={"60%"} onClick={() => {
-                            claim();
-                        }}><CustomButton str={"Claim"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                    </Box>
-                </Row02>
-                <Row03>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        TRVL/ETH Uniswap LP
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        {total_lp_stake * 1}
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        {lp_rewards} TRVL
-                    </Box>
-                    <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+            <RewardsPart>
+                <LeftSector01>
+                    <LeftSector01Text>REWARDS</LeftSector01Text>
+                </LeftSector01>
+                <CenterSector01>
+                    <RewardText>
+                        <LeftText01>
+                            Rewards Details
+                        </LeftText01>
+                        <RightText01 marginTop={"3%"}>
+                            Staking rewards enter a 06 month vesting period after claiming. TRVL tokens are non-transferable and only used for accounting purposes.
+                        </RightText01>
+                        <RightText01 marginTop={"3%"}>
+                            Next rewards released in 0 hours 0 minutes
+                        </RightText01>
+                    </RewardText>
+                    <PoolsPart>
+                        <Row01>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Care Pools
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Amount Staked
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Claimable Rewards
+                            </Box>
+                            <Box display={"flex"} flex="0.5" alignItems={"center"} ></Box>
+                        </Row01>
+                        <Row02>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                <img />TRVL
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                $ {user_total_stake * 1}
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                {rewards} TRVL
+                            </Box>
+                            <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                                <Box display={"1"} width={"60%"} onClick={() => {
+                                    claim();
+                                }}>
+                                    <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+                                </Box>
+                            </Box>
+                        </Row02>
+                        <Row03>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                TRVL/ETH Uniswap LP
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                {total_lp_stake * 1}
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                {lp_rewards} TRVL
+                            </Box>
+                            <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
 
-                        <Box display={"1"} width={"60%"} onClick={() => {
-                            claimLP();
-                        }}>
-                            <CustomButton str={"Claim"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                    </Box>
-                </Row03>
-                <Row03 marginBottom={"5%"}>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        Free TRVL
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        $ {free_trvl_staked_value * 1}
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                        {free_rewards} TRVL
-                    </Box>
-                    <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                                <Box display={"1"} width={"60%"} onClick={() => {
+                                    claimLP();
+                                }}>
+                                    <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+                                </Box>
+                            </Box>
+                        </Row03>
+                        <Row03 marginBottom={"5%"}>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                Free TRVL
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                $ {free_trvl_staked_value * 1}
+                            </Box>
+                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                {free_rewards} TRVL
+                            </Box>
+                            <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
 
-                        <Box display={"1"} width={"60%"} onClick={() => {
-                            claim_free();
-                        }}>
-                            <CustomButton str={"Claim"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                    </Box>
-                </Row03>
-            </PoolsPart>
+                                <Box display={"1"} width={"60%"} onClick={() => {
+                                    claim_free();
+                                }}>
+                                    <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+                                </Box>
+                            </Box>
+                        </Row03>
+                    </PoolsPart>
+                </CenterSector01>
+                <RightSector01></RightSector01>
+            </RewardsPart>
+
             <NotificationContainer />
         </StyledComponent>
     );
 }
+
+const RewardsPart = styled(Box)`
+    display: flex;
+    width: 100%;
+`
+
+const LeftSector01 = styled(Box)`
+    display: flex;
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+    border-left: 1px solid #0B2336;
+`
+const CenterSector01 = styled(Box)`
+    display: flex;
+    flex: 4;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+`
+const RightSector01 = styled(Box)`
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+`
+const LeftSector01Text = styled(Box)`
+    display: flex;
+    margin-top: 15%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0B2336;
+`
 
 const PoolsPart = styled(Box)`
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-top: 3%;
-    margin-bottom: 5%;
-    background: #A32A2F;
-    backdrop-filter: blur(100px);
-    border-radius: 30px;
-    transition: .3s;
-    font-family: "Inter",sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    letter-spacing: -.01em;
-    color: white;
-    font-size: 18px;
-    line-height: 24px;
-    align-items: center;
-    &:hover{
-        box-shadow: 0 29px 32px rgb(201 155 159 / 100%) ;
-    }
+
 `
 const Row01 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 5%;
-    width: 90%;
+    width: 100%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    /* identical to box height, or 125% */
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    /* Main/Text */
+    color: #0B2336;
 `
 
 const Row02 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 2%;
-    width: 90%;
-    border-top: 1px solid rgb(255 255 255 /50%);
+    width: 100%;
+    border-top: 1px solid #0B2336;
     padding-top: 2%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #0B2336;
 `
 const Row03 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 2%;
-    width: 90%;
-    border-top: 1px solid rgb(255 255 255 /50%);
+    width: 100%;
+    border-top: 1px solid #0B2336;
     padding-top: 2%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #0B2336;
     
 `
 
@@ -292,31 +352,36 @@ const StyledComponent = styled(Box)`
 const RewardText = styled(Box)`
     display: flex;
     width: 100%;
+    flex-direction: column;
 `
 
 const LeftText01 = styled(Box)`
     display: flex;
     flex: 1;
-    font-family: "Inter",sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 54px;
-    line-height: 36px;
-    letter-spacing: -.01em;
-    color: #05070c;
+    font-family: 'Reckless Neue';
+font-style: normal;
+font-weight: 300;
+font-size: 64px;
+line-height: 68px;
+/* identical to box height, or 106% */
+
+letter-spacing: -0.015em;
+
+color: #000000;
 `
 const RightText01 = styled(Box)`
     display: flex;
     flex: 1;
-    font-family: "Inter",sans-serif;
-    font-style: normal;
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 32px;
-    letter-spacing: -.01em;
-    color: #05070c;
-    max-width: 560px;
-    float: right;
+    font-family: 'Reckless Neue';
+font-style: normal;
+font-weight: 400;
+font-size: 22px;
+line-height: 36px;
+/* or 164% */
+
+
+color: #0B2336;
+
 `
 
 export default Reward;

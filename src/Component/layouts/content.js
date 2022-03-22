@@ -42,6 +42,7 @@ const Content = ({ modalFlag, setModal }) => {
     const [locked, set_locked] = useState(false);
     const [mc_apr, set_mc_apr] = useState(0);
     const [lp_apr, set_lp_apr] = useState(0);
+    const [free_apr, set_free_apr] = useState(0);
     const [flag_flag_staking_modal, set_flag_staking_modal] = useState(0);
     const [total_lp_stake, set_total_lp_stake] = useState(0);
     const [rewards, set_rewards] = useState(0);
@@ -141,7 +142,7 @@ const Content = ({ modalFlag, setModal }) => {
             setTimeout(() => {
                 get_total_lp_stake();
                 set_spin_load(false);
-                get_lp_apr();
+                get_mc_apr();
                 set_amount(0);
                 get_rewards();
                 handleClose();
@@ -171,6 +172,7 @@ const Content = ({ modalFlag, setModal }) => {
                 get_free_trvl_staked_value();
                 set_spin_load(false);
                 set_amount(0);
+                get_mc_apr();
             }, 3000);
         }
         catch (err) {
@@ -195,28 +197,40 @@ const Content = ({ modalFlag, setModal }) => {
 
     const get_mc_apr = async () => {
         try {
-            let locked1 = await SMC_Contract.getTotalDeposit(account);
-            let total = await SMC_Contract.balanceOf(account);
-            let apr = (parseInt(total._hex) / parseInt(locked1) * 100).toFixed(2);
-            set_mc_apr(apr);
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-
-
-    const get_lp_apr = async () => {
-        try {
+            let locked = await SMC_Contract.getTotalDeposit(account);
+            let total = await MC_Contract.totalSupply();
+            let apr = (100 * parseInt(locked._hex) / parseInt(total._hex)).toFixed(5);
+            if (parseFloat(apr) === 0) {
+                set_mc_apr(0);
+            }
+            else {
+                set_mc_apr(apr);
+            }
             let locked1 = await SMC_LP_Contract.getTotalDeposit(account);
-            let total = await SMC_LP_Contract.balanceOf(account);
-            let apr = (parseInt(total._hex) / parseInt(locked1) * 100).toFixed(2);
-            set_lp_apr(apr);
+            let total1 = await LP_Contract.totalSupply();
+            let apr1 = (100 * parseInt(locked1._hex) / parseInt(total1._hex)).toFixed(5);
+            if (parseFloat(apr1) === 0) {
+                set_lp_apr(0);
+            }
+            else {
+                set_lp_apr(apr1);
+            }
+            let locked2 = await FREE_TRVL_CONTRACT.balanceOf(account);
+            let total2 = await FREE_TRVL_CONTRACT.totalSupply();
+            let apr2 = (100 * parseInt(locked2._hex) / parseInt(total2._hex)).toFixed(5);
+            if (parseFloat(apr2) === 0) {
+                set_free_apr(0);
+            }
+            else {
+                set_free_apr(apr2);
+            }
         }
         catch (err) {
             console.log(err);
         }
     }
+
+
 
     const get_rewards = async () => {
         try {
@@ -292,7 +306,7 @@ const Content = ({ modalFlag, setModal }) => {
     const unstake_free = async () => {
         try {
             set_spin_load_free(true);
-            const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x"+(amount_free*Math.pow(10,18)).toString(16));
+            const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x" + (amount_free * Math.pow(10, 18)).toString(16));
             await unstake_free1.wait();
             NotificationManager.success('Successed. See your results.', 'Hi.', 3000);
             setTimeout(() => {
@@ -341,7 +355,6 @@ const Content = ({ modalFlag, setModal }) => {
             get_total_stake();
             get_total_lp_stake();
             get_mc_apr();
-            get_lp_apr();
             get_rewards();
             get_pools();
             get_claimRewads();
@@ -352,385 +365,441 @@ const Content = ({ modalFlag, setModal }) => {
 
     return (
         <StyledComponent>
-            <RewardText>
-                <LeftText01>
-                    Rewards
-                </LeftText01>
-            </RewardText>
-            <CenterPart>
-                <Left01>
-                    <Box display={"flex"} flex={"2"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="60%" borderBottom={"1px solid white"}>
-                        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} marginTop="2%" flex={"3"}>
-                            <img src={Staked01} alt="staked01"></img>
-                        </Box>
-                        <SmText01>
-                            Staked
-                        </SmText01>
-                        <BgText01>
-                            $ {user_total_stake * 1}
-                        </BgText01>
-                    </Box>
-                    <Box display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} width="60%">
-                        {
-                            active ?
-                                <>
-                                    <ConnectWalletBtn01 onClick={() => {
-                                        window.scrollTo(0, document.body.scrollHeight);
-                                    }}>
-                                        Stake
-                                    </ConnectWalletBtn01>
-                                </> :
-                                <>
-                                    <ConnectWalletBtn01 onClick={() => connect_wallet()}>
-                                        Connect Wallet
-                                    </ConnectWalletBtn01>
-                                </>
-                        }
-                    </Box>
-                </Left01>
-                <Center01>
-                    <Box display={"flex"} flex={"2"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="60%" borderBottom={"1px solid white"}>
-                        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} marginTop="2%" flex={"3"} width={"100%"}>
-                            <img src={Reward01} alt="reward01"></img>
-                        </Box>
-                        <SmText01>
-                            Unclaimed Rewards
-                        </SmText01>
-                        <BgText01>
-                            $ {rewards}
-                        </BgText01>
-                        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} marginTop="2%" flex={"3"} width={"100%"}>
-                            <SmText02 display={"flex"} justifyContent={"center"} alignContent={"center"} width={"100%"}>
-                                {/* <img src={Mark02} width={"40px"} height={"40px"} alt="mark02" ></img>{'\u00a0'} */}
-                                TRVL {rewards}
-                            </SmText02>
-                        </Box>
-                    </Box>
-                    <Box display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} width="60%">
-                        {
-
-                            active ?
-                                <>
-                                    <ConnectWalletBtn01 onClick={() => {
-                                        navigate('/reward');
-                                        window.scrollTo(0, 0);
-                                    }}>
-                                        Claim
-                                    </ConnectWalletBtn01>
-                                </> :
-                                <>
-                                    <ConnectWalletBtn01 onClick={() => connect_wallet()}>
-                                        Connect Wallet
-                                    </ConnectWalletBtn01>
-                                </>
-                        }
-                    </Box>
-                </Center01>
-                <Right01>
-                    <Part01 display={"flex"} position={"relative"} flex={"1"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="100%">
-
-                        <GraphInfoBox>
-                            <Box display={"flex"} flex="1" fontSize={"18px"} justifyContent={"center"} alignItems={"center"} >TRVL Price</Box>
-                            <Box display={"flex"} flex="1" fontSize={"24px"} justifyContent={"center"} alignItems={"center"} fontWeight={"600"}>$ 1</Box>
-                            {/* <Box display={"flex"} flex="1" fontSize={"18px"} justifyContent={"center"} alignItems={"center"} fontWeight={"600"} color={"white"}>
-                                <Box display={"flex"} justifyContent={"center"} alignItems={"center"}><img src={Triangle01} width={"16px"} height={"16px"} alt="" /></Box>
-                                <Box display={"flex"} justifyContent={"center"} alignItems={"center"} marginLeft={"2%"}>1.63%</Box>
-                            </Box> */}
-                        </GraphInfoBox>
-                    </Part01>
-                    <Part01 display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="100%" marginTop={"10%"}>
-                        <SmText03>
-                            Total Locked Amount
-                        </SmText03>
-                        <Bgtext02>
-                            $ {total_stake * 1}
-                        </Bgtext02>
-                        <SmText03>
-                            Total Claimed Amount
-                        </SmText03>
-                        <Bgtext02>
-                            $ {claim_rewards}
-                        </Bgtext02>
-                    </Part01>
-
-                </Right01>
-            </CenterPart>
-            {
-                active ?
-                    <>
-                        {/* <ConnectWalletBtn01>
-                            {account_t.slice(0, 6) + "..." + account_t.slice(-4)}
-                        </ConnectWalletBtn01> */}
-                    </> :
-                    <>
-                        <DownPart>
-                            <ConnectWalletBtn01 onClick={() => connect_wallet()}>
-                                Connect Wallet
-                            </ConnectWalletBtn01>
-                        </DownPart>
-                    </>
-            }
-            {active ?
-                <>
-                    <RewardText marginTop={"5%"}>
+            <RewardsPart>
+                <LeftSector01>
+                    <LeftSector01Text>REWARDS</LeftSector01Text>
+                </LeftSector01>
+                <CenterSector01>
+                    <RewardText>
                         <LeftText01>
-                            Core Pools
+                            Overview
                         </LeftText01>
+                        <LeftText02>We offer staking pools for TRVL and for LP tokens associated with TRVL, whith various look-up conditions</LeftText02>
                     </RewardText>
-                    <PoolsPart>
-                        <Row01>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                Care Pools
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                Total Value Locked
-                            </Box>
-                            <Box display={"flex"} flex="0.6" alignItems={"center"} >
-                                APR
-                            </Box>
-                            <Box display={"flex"} flex="1.4" alignItems={"center"} ></Box>
-                        </Row01>
-                        <Row02>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                <img alt="" />TRVL
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                $ {total_stake * 1}
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                {mc_apr !== "NaN" ? mc_apr : 100}%
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
-                                <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    handleOpen1();
-                                    set_flag_staking_modal(0);
-                                }}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    handleOpen();
-                                    set_flag_staking_modal(0);
-                                }}><CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                            </Box>
-                        </Row02>
-                        <Row03>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                TRVL/ETH Uniswap LP
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                $ {total_lp_stake * 1}
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                {lp_apr !== "NaN" ? lp_apr : 100}%
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
-                                <Box display={"1"} width={"30%"}>
-                                    <a target="_blank" rel="noopener noreferrer" href="https://v2.info.uniswap.org/pair/0xccb63225a7b19dcf66717e4d40c9a72b39331d61"><CustomButton str={"Buy LP"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></a></Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    handleOpen1();
-                                    set_flag_staking_modal(1);
-                                }}>
-                                    <CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton>
+                    <CenterPart>
+                        <Left01>
+                            <SmText01>
+                                Staked
+                            </SmText01>
+                            <BgText01>
+                                $ {user_total_stake * 1}
+                            </BgText01>
+                            <SmText05>
+                                TRVL {user_total_stake}
+                            </SmText05>
+                            <Box display={"flex"} flex={"2"} width="80%" alignItems={"center"}>
+                                <Box display={"flex"} width={"50%"}></Box>
+                                <Box display={"flex"} width={"50%"}>
+                                    {
+                                        active ?
+                                            <>
+                                                <ConnectWalletBtn01 onClick={() => {
+                                                    window.scrollTo(0, document.body.scrollHeight);
+                                                }}>
+                                                    Stake
+                                                </ConnectWalletBtn01>
+                                            </> :
+                                            <>
+                                                <ConnectWalletBtn01 onClick={() => connect_wallet()}>
+                                                    Connect Wallet
+                                                </ConnectWalletBtn01>
+                                            </>
+                                    }
                                 </Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    handleOpen();
-                                    set_flag_staking_modal(1);
-                                }}>
-                                    <CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton>
+
+                            </Box>
+                        </Left01>
+                        <Left01>
+                            <SmText01>
+                                Unclaimed Rewards
+                            </SmText01>
+                            <BgText01>
+                                $ {rewards * 1}
+                            </BgText01>
+                            <SmText05>
+                                TRVL {rewards}
+                            </SmText05>
+                            <Box display={"flex"} flex={"2"} width="80%" alignItems={"center"}>
+                                <Box display={"flex"} width={"50%"}></Box>
+                                <Box display={"flex"} width={"50%"}>
+                                    {
+                                        active ?
+                                            <>
+                                                <ConnectWalletBtn01 onClick={() => {
+                                                    navigate('/reward');
+                                                    window.scrollTo(0, 0);
+                                                }}>
+                                                    Claim
+                                                </ConnectWalletBtn01>
+                                            </> :
+                                            <>
+                                                <ConnectWalletBtn01 onClick={() => connect_wallet()}>
+                                                    Connect Wallet
+                                                </ConnectWalletBtn01>
+                                            </>
+                                    }
                                 </Box>
+
                             </Box>
-                        </Row03>
-                        <Row02 marginBottom={"5%"}>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                <img alt="" />Free TRVL
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                $ {free_trvl_staked_value * 1}
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                100%
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
-                                <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    // handleOpen1();
-                                    // set_flag_staking_modal(2);
-                                }}><CustomButton str={"Details"} width={"100%"} height={"30px"} color={"black"} bgcolor={"white"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                                <Box display={"1"} width={"30%"} onClick={() => {
-                                    handleOpen();
-                                    set_flag_staking_modal(2);
-                                }}><CustomButton str={"Stake"} width={"100%"} height={"30px"} color={"white"} bgcolor={"rgba(0,0,0,.3)"} fsize={"16px"} fweight={"600"} bradius={"8px"}></CustomButton></Box>
-                            </Box>
-                        </Row02>
-                    </PoolsPart></> :
+                        </Left01>
+                    </CenterPart>
+                    <CenterPart01>
+                        <Right01>
+                            <Part01 display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="100%" >
+                                <SmText03>
+                                    Total Amount Staked
+                                </SmText03>
+                                <Bgtext02>
+                                    $ {total_stake * 1}
+                                </Bgtext02>
+                                <SmText03>
+                                    TRVL {total_stake}
+                                </SmText03>
+                            </Part01>
+                        </Right01>
+                        <Right01>
+                            <Part01 display={"flex"} flex={"1"} justifyContent="center" alignItems={"center"} flexDirection={"column"} width="100%" >
+                                <SmText03>
+                                    Total Amount Staked
+                                </SmText03>
+                                <Bgtext02>
+                                    $ {claim_rewards * 1}
+                                </Bgtext02>
+                                <SmText03>
+                                    TRVL {claim_rewards}
+                                </SmText03>
+                            </Part01>
+                        </Right01>
+                    </CenterPart01>
+                </CenterSector01>
+                <RightSector01></RightSector01>
+            </RewardsPart>
+            {active ? <PoolsPart>
+                <LeftSector01>
+                    <LeftSector01Text>Pools</LeftSector01Text>
+                </LeftSector01>
+                <CenterSector02>
+
+                    <>
+                        <RewardText >
+                            <LeftText01>
+                                Pools Information
+                            </LeftText01>
+                            <LeftText03>
+                                These are available staking pools for TRVL and LP tokens related to TRVL.
+                                Staking contracts have been audited by PeckShield.
+                            </LeftText03>
+                        </RewardText>
+                        <PoolsPart01>
+                            <Row01>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    Care Pools
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    Total Value Locked
+                                </Box>
+                                <Box display={"flex"} flex="0.6" alignItems={"center"} >
+                                    APR
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} ></Box>
+                            </Row01>
+                            <Row02>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    <img alt="" />TRVL
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    $ {total_stake * 1}
+                                </Box>
+                                <Box display={"flex"} flex="0.6" alignItems={"center"} >
+                                    {mc_apr !== "NaN" ? mc_apr : 100}%
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
+                                    <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        handleOpen1();
+                                        set_flag_staking_modal(0);
+                                    }}><CustomButton str={"Details"} width={"100%"} height={"56px"} color={"#0B2336"} bgcolor={""} fsize={"16px"} fweight={"400"} bradius={"100px"} border={"1px solid #0B2336"}></CustomButton></Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        handleOpen();
+                                        set_flag_staking_modal(0);
+                                    }}><CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"}></CustomButton></Box>
+                                </Box>
+                            </Row02>
+                            <Row03>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    TRVL/ETH Uniswap LP
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    $ {total_lp_stake * 1}
+                                </Box>
+                                <Box display={"flex"} flex="0.6" alignItems={"center"} >
+                                    {lp_apr !== "NaN" ? lp_apr : 100}%
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
+                                    <Box display={"1"} width={"30%"}>
+                                        <a target="_blank" rel="noopener noreferrer" href="https://v2.info.uniswap.org/pair/0xccb63225a7b19dcf66717e4d40c9a72b39331d61"><CustomButton str={"Buy LP"} width={"100%"} height={"56px"} color={"#0B2336"} bgcolor={""} fsize={"16px"} fweight={"400"} bradius={"100px"} border={"1px solid #0B2336"}></CustomButton></a></Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        handleOpen1();
+                                        set_flag_staking_modal(1);
+                                    }}>
+                                        <CustomButton str={"Details"} width={"100%"} height={"56px"} color={"#0B2336"} bgcolor={""} fsize={"16px"} fweight={"400"} bradius={"100px"} border={"1px solid #0B2336"}></CustomButton>
+                                    </Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        handleOpen();
+                                        set_flag_staking_modal(1);
+                                    }}>
+                                        <CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"}></CustomButton>
+                                    </Box>
+                                </Box>
+                            </Row03>
+                            <Row02 marginBottom={"5%"}>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    <img alt="" />Free TRVL
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} >
+                                    $ {free_trvl_staked_value * 1}
+                                </Box>
+                                <Box display={"flex"} flex="0.6" alignItems={"center"} >
+                                    {/* {free_apr}% */}
+                                    0%
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
+                                    <Box display={"1"} width={"30%"}><CustomButton str={""} width={"100%"} height={""} color={""} bgcolor={""} fsize={""} fweight={""} bradius={""}></CustomButton></Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        // handleOpen1();
+                                        // set_flag_staking_modal(2);
+                                    }}><CustomButton str={"Details"} width={"100%"} height={"56px"} color={"#0B2336"} bgcolor={""} fsize={"16px"} fweight={"400"} bradius={"100px"} border={"1px solid #0B2336"}></CustomButton></Box>
+                                    <Box display={"1"} width={"30%"} onClick={() => {
+                                        handleOpen();
+                                        set_flag_staking_modal(2);
+                                    }}><CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"}></CustomButton></Box>
+                                </Box>
+                            </Row02>
+                        </PoolsPart01></>
+                </CenterSector02>
+
+            </PoolsPart>
+                :
                 <></>
             }
+            {active ? <DepositsPart>
+                <LeftSector01>
+                    <LeftSector01Text>Deposits</LeftSector01Text>
+                </LeftSector01>
+                <CenterSector02>
 
+                    <>
+                        <RewardText>
+                            <LeftText01>
+                                Deposit History
+                            </LeftText01>
+                            <LeftText03>
+                                All your deposits will be listed here for the TRVL pools you're entered into.
+                            </LeftText03>
+                        </RewardText>
+                        <PoolsPart01>
+                            <Row01>
+                                <Box display={"flex"} flex="0.8" alignItems={"center"} >
+                                    Pools
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                    Staked Amount
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                    Rewarded Amount
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                    Lock Time
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                    Unlock Time
+                                </Box>
+                                <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                    Avaliable For Claim
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                    APR
+                                </Box>
+                                <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"flex-end"}>
+                                </Box>
+                            </Row01>
+                            {
+                                trvl_pools && trvl_pools.map((pool, index) => {
+                                    return (
+                                        <Row02 key={index}>
+                                            <Box display={"flex"} flex="0.8" alignItems={"center"} >
+                                                <img alt="" />TRVL
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                                $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                                $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                            </Box>
+                                            <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                                120.05 %
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} width={"100%"} justifyContent={"flex-end"}>
+                                                {
+                                                    Date.now() > (parseInt(pool.end._hex) * 1000) ?
+                                                        <>
+                                                            <Box display={"1"} width={"80%"} onClick={() => {
+                                                                unstake(index);
+                                                            }}>
+                                                                <CustomButton
+                                                                    str={"Unlock"}
+                                                                    width={"100%"}
+                                                                    height={"56px"}
+                                                                    color={"#D4EEE9"}
+                                                                    bgcolor={"#0B2336"}
+                                                                    fsize={"16px"}
+                                                                    fweight={"400"}
+                                                                    bradius={"100px"}
+                                                                >
+                                                                </CustomButton>
+                                                            </Box>
+                                                        </> : <></>
+                                                }
+                                            </Box>
+                                        </Row02>
+                                    )
 
-            {active ?
-                <>
-                    <RewardText marginTop={"5%"}>
-                        <LeftText01>
-                            Pools
-                        </LeftText01>
-                    </RewardText>
-                    <PoolsPart>
-                        <Row01>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                Pool
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                                Amount Staked
-                            </Box>
-                            <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                Lock Date
-                            </Box>
-                            <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                Unlock Date
-                            </Box>
-                            <Box display={"flex"} flex="1" alignItems={"center"} >
-                            </Box>
-                        </Row01>
-                        {
-                            trvl_pools && trvl_pools.map((pool, index) => {
-                                return (
-                                    <Row02 key={index}>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} >
-                                            <img alt="" />TRVL Pool
+                                })
+                            }
+
+                            {
+                                trvllp_pools && trvllp_pools.map((pool, index) => {
+                                    return (
+                                        <Row02 key={index}>
+                                            <Box display={"flex"} flex="0.8" alignItems={"center"} >
+                                                <img alt="" />TRVL/LP
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                                $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} >
+                                                $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                            </Box>
+
+                                            <Box display={"flex"} flex="1" alignItems={"center"} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} marginRight={"1%"}>
+                                                {
+                                                    new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
+                                                    + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                                }
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                                120.05 %
+                                            </Box>
+                                            <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"flex-end"} width={"100%"} >
+                                                {
+                                                    Date.now() > (parseInt(pool.end._hex) * 1000) ?
+                                                        <>
+                                                            <Box display={"1"} width={"80%"} onClick={() => {
+                                                                unstake_lp(index);
+                                                            }}>
+                                                                <CustomButton
+                                                                    str={"Unlock"}
+                                                                    width={"100%"}
+                                                                    height={"56px"}
+                                                                    color={"#D4EEE9"}
+                                                                    bgcolor={"#0B2336"}
+                                                                    fsize={"16px"}
+                                                                    fweight={"400"}
+                                                                    bradius={"100px"}>
+                                                                </CustomButton>
+                                                            </Box>
+                                                        </> : <></>
+                                                }
+                                            </Box>
+                                        </Row02>
+                                    )
+
+                                })
+                            }
+                            {
+                                free_trvl_staked_value === 0 ? <></> :
+                                    <Row02>
+                                        <Box display={"flex"} flex="0.8" alignItems={"center"} >
+                                            <img alt="" />Free TRVL
                                         </Box>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} >
-                                            $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                            $ {free_trvl_staked_value}
                                         </Box>
-                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                            $ {free_trvl_staked_value}
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
+                                            No Lock Time
+                                        </Box>
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
                                             {
-                                                new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
-                                                + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
+                                                new Date().toLocaleDateString("en-US") + " "
+                                                + new Date().toLocaleTimeString("en-US")
                                             }
                                         </Box>
-                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
+                                        <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
                                             {
-                                                new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
-                                                + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
+                                                new Date().toLocaleDateString("en-US") + " "
+                                                + new Date().toLocaleTimeString("en-US")
                                             }
                                         </Box>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent="center" width={"100%"}>
-                                            {
-                                                Date.now() > (parseInt(pool.end._hex) * 1000) ?
-                                                    <>
-                                                        <Box display={"1"} width={"40%"} onClick={() => {
-                                                            unstake(index);
-                                                        }}>
-                                                            <CustomButton
-                                                                str={"Unlock"}
-                                                                width={"100%"}
-                                                                height={"30px"}
-                                                                color={"black"}
-                                                                bgcolor={"white"}
-                                                                fsize={"16px"}
-                                                                fweight={"600"}
-                                                                bradius={"8px"}
-                                                            >
-                                                            </CustomButton>
-                                                        </Box>
-                                                    </> : <></>
-                                            }
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
+                                            % 100.00
+                                        </Box>
+                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent="flex-end" width={"100%"}>
+                                            <Box display={"1"} width={"80%"} onClick={() => {
+                                                handleOpen2();
+                                            }}>
+                                                <CustomButton
+                                                    str={"Unlock"}
+                                                    width={"100%"}
+                                                    height={"56px"}
+                                                    color={"#D4EEE9"}
+                                                    bgcolor={"#0B2336"}
+                                                    fsize={"16px"}
+                                                    fweight={"400"}
+                                                    bradius={"100px"}
+                                                >
+                                                </CustomButton>
+                                            </Box>
+
                                         </Box>
                                     </Row02>
-                                )
-
-                            })
-                        }
-
-                        {
-                            trvllp_pools && trvllp_pools.map((pool, index) => {
-                                return (
-                                    <Row02 key={index}>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} >
-                                            <img alt="" />TRVL/LP Pool
-                                        </Box>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} >
-                                            $ {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)}
-                                        </Box>
-                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                            {
-                                                new Date(parseInt(pool.start._hex) * 1000).toLocaleDateString("en-US") + " "
-                                                + new Date(parseInt(pool.start._hex) * 1000).toLocaleTimeString("en-US")
-                                            }
-                                        </Box>
-                                        <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                            {
-                                                new Date(parseInt(pool.end._hex) * 1000).toLocaleDateString("en-US") + " "
-                                                + new Date(parseInt(pool.end._hex) * 1000).toLocaleTimeString("en-US")
-                                            }
-                                        </Box>
-                                        <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={"center"} width={"100%"} >
-                                            {
-                                                Date.now() > (parseInt(pool.end._hex) * 1000) ?
-                                                    <>
-                                                        <Box display={"1"} width={"40%"} onClick={() => {
-                                                            unstake_lp(index);
-                                                        }}>
-                                                            <CustomButton
-                                                                str={"Unlock"}
-                                                                width={"100%"}
-                                                                height={"30px"}
-                                                                color={"black"}
-                                                                bgcolor={"white"}
-                                                                fsize={"16px"}
-                                                                fweight={"600"}
-                                                                bradius={"8px"}>
-                                                            </CustomButton>
-                                                        </Box>
-                                                    </> : <></>
-                                            }
-                                        </Box>
-                                    </Row02>
-                                )
-
-                            })
-                        }
-                        {
-                            free_trvl_staked_value === 0 ? <></> :
-                                <Row02>
-                                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                                        <img alt="" />Free TRVL Pool
-                                    </Box>
-                                    <Box display={"flex"} flex="1" alignItems={"center"} >
-                                        $ {free_trvl_staked_value}
-                                    </Box>
-                                    <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                        No Lock Time
-                                    </Box>
-                                    <Box display={"flex"} flex="1.2" alignItems={"center"} >
-                                        {
-                                            new Date().toLocaleDateString("en-US") + " "
-                                            + new Date().toLocaleTimeString("en-US")
-                                        }
-                                    </Box>
-                                    <Box display={"flex"} flex="1" alignItems={"center"} justifyContent="center" width={"100%"}>
-                                        <Box display={"1"} width={"40%"} onClick={() => {
-                                            handleOpen2();
-                                        }}>
-                                            <CustomButton
-                                                str={"Unlock"}
-                                                width={"100%"}
-                                                height={"30px"}
-                                                color={"black"}
-                                                bgcolor={"white"}
-                                                fsize={"16px"}
-                                                fweight={"600"}
-                                                bradius={"8px"}
-                                            >
-                                            </CustomButton>
-                                        </Box>
-
-                                    </Box>
-                                </Row02>
-                        }
-
-
-
-                        <Row03></Row03>
-                    </PoolsPart></> :
+                            }
+                            <Row03></Row03>
+                        </PoolsPart01></>
+                </CenterSector02>
+            </DepositsPart> :
                 <></>
             }
 
@@ -747,24 +816,27 @@ const Content = ({ modalFlag, setModal }) => {
                     </CancelBox01>
                     <TitleText01>
                         <img src={Mark01} width={"30px"} height={"30px"} alt=""></img>
-                        {'\u00a0'}{'\u00a0'}{flag_flag_staking_modal === 0 ? "TRVL" : flag_flag_staking_modal === 1 ? "TRVL/ETH Uniswap LP" : "Free TRVL"}
+                        {'\u00a0'}{'\u00a0'}{flag_flag_staking_modal === 0 ? "TRVL Staking" : flag_flag_staking_modal === 1 ? "TRVL/ETH Uniswap LP Staking" : "Free TRVL Staking"}
                     </TitleText01>
-                    {flag_flag_staking_modal === 2 ? <></> : <SelectDuration>
-                        <FlexibleBox onClick={() => {
-                            if (flag_spin_load === true) {
-                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
-                                return;
-                            }
-                            set_locked(false);
-                        }} locked={locked ? 1 : 0}>Flexible</FlexibleBox>
-                        <LockedBox onClick={() => {
-                            if (flag_spin_load === true) {
-                                NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
-                                return;
-                            }
-                            set_locked(true);
-                        }} locked={locked ? 1 : 0}>Locked</LockedBox>
-                    </SelectDuration>}
+                    {
+                        flag_flag_staking_modal === 2 ? <></> :
+                            <SelectDuration>
+                                <FlexibleBox onClick={() => {
+                                    if (flag_spin_load === true) {
+                                        NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                        return;
+                                    }
+                                    set_locked(false);
+                                }} locked={locked ? 1 : 0}>Flexible</FlexibleBox>
+                                <LockedBox onClick={() => {
+                                    if (flag_spin_load === true) {
+                                        NotificationManager.error('Please wait while processing.', 'Hi.', 2000);
+                                        return;
+                                    }
+                                    set_locked(true);
+                                }} locked={locked ? 1 : 0}>Locked</LockedBox>
+                            </SelectDuration>
+                    }
 
                     <SmText04 >
                         Amount
@@ -832,8 +904,7 @@ const Content = ({ modalFlag, setModal }) => {
                             :
                             <></>
                         }
-
-                        <CustomButton str={"Stake"} width={"100%"} height={"50px"} color={"white"} bgcolor={"#A32A2F"} fsize={"16px"} fweight={"600"} bradius={"8px"} />
+                        <CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
                     </Box>
                 </ModalBox>
             </Modal>
@@ -887,7 +958,7 @@ const Content = ({ modalFlag, setModal }) => {
                             :
                             <></>
                         }
-                        <CustomButton str={"Stake"} width={"100%"} height={"50px"} color={"white"} bgcolor={"#A32A2F"} fsize={"16px"} fweight={"600"} bradius={"8px"} />
+                        <CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
                     </Box>
                 </ModalBox>
             </Modal>
@@ -934,9 +1005,36 @@ const Content = ({ modalFlag, setModal }) => {
                 </ModalBox>
             </Modal>
             <NotificationContainer />
-        </StyledComponent>
+        </StyledComponent >
     );
 }
+
+const RewardsPart = styled(Box)`
+    display: flex;
+    width: 100%;
+`
+const PoolsPart = styled(Box)`
+    display: flex;
+    width: 100%;
+    margin-top: 10%;
+`
+const LeftText03 = styled(Box)`
+    display: flex;
+    margin-top: 3%;
+    font-family: 'Reckless Neue';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 36px;
+    /* or 164% */
+    color: #0B2336;
+`
+
+const DepositsPart = styled(Box)`
+    display: flex;
+    width: 100%;
+    margin-top: 10%;
+`
 
 const CancelBox01 = styled(Box)`
     display: flex;
@@ -944,42 +1042,61 @@ const CancelBox01 = styled(Box)`
     right: 5%;
     top: 5%;
     font-size: 30px;
-    color:#322f2f;
+    color:#0B2336;
+    opacity: 0.4;
     transition: .1s;
     &:hover{
         cursor:pointer;
         transition: .3s;
-        color:black;
+        color:#0B2336;
+        opacity: 1;
     }
 `
 
 const FlexibleBox = styled(Box)`
     display: flex;
     flex: 1;
-    border-radius: 50px;
-    border: none;
-    background-color: ${({ locked }) => locked ? "white" : "#A32A2F"};
-    color:${({ locked }) => locked ? "#A32A2F" : "white"};
+    border-bottom: 1px solid #0B2336;
+    opacity: ${({ locked }) => locked ? 0.4 : 1};
+    border-bottom: ${({ locked }) => locked ? "1px solid #0B2336" : "2px solid #0B2336"};
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0B2336;
     justify-content: center;
     align-items: center;
     transition: .3s;
     &:hover{
         cursor: pointer;
+        opacity: 1;
+        border-bottom: 2px solid #0B2336;
     }
 `
 
 const LockedBox = styled(Box)`
     display: flex;
     flex: 1;
-    border-radius: 50px;
-    border: none;
-    background-color: ${({ locked }) => locked ? "#A32A2F" : "white"};
-    color:${({ locked }) => locked ? "white" : "#A32A2F"};
+    opacity: ${({ locked }) => locked ? 1 : 0.4};
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0B2336;
+    border-bottom: ${({ locked }) => locked ? "2px solid #0B2336" : "1px solid #0B2336"};
     justify-content: center;
     align-items: center;
     transition: .3s;
     &:hover{
         cursor: pointer;
+        border-bottom: 2px solid #0B2336;
+        opacity: 1;
     }
 `
 
@@ -988,51 +1105,55 @@ const SelectDuration = styled(Box)`
     width: 100%;
     margin-top: 8%;
     height: 50px;
-    border-radius: 50px;
+    /* border-radius: 50px; */
     font-family: "Inter",sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 16px;
     line-height: 19px;
-    border: 2px solid rgb(133, 133, 133);
+    /* border: 2px solid rgb(133, 133, 133); */
 `
 
 const InputAmount = styled(Box)`
     display: flex;
     margin-top: 2%;
     height: 40px;
-    border-radius: 8px;
-    font-family: "Inter",sans-serif;
+    outline: none;
+    font-family: 'Radio Grotesk';
     font-style: normal;
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 19px;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 32px;
+    color: #0B2336;
+    border: none ;
+    background: none ;
+    border-bottom: 1px solid #0B2336;
 `
 
 const SmText04 = styled(Box)`
     display: flex;
     width: 100%;
-    font-family: "Inter",sans-serif;
+    font-family: 'Radio Grotesk';
     font-style: normal;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 16px;
-    line-height: 19px;
-    text-align: center;
-    color: black;
+    line-height: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0B2336;
     margin-top: 5%;
 `
 
 const TitleText01 = styled(Box)`
-  display: flex;
-  flex:1;
-  align-items: center;
-  font-family: "Inter",sans-serif!important;
-  font-style: normal;
-  letter-spacing: -.01em;
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 100%;
-  color: #05070c;
+    display: flex;
+    flex:1;
+    align-items: center;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 28px;
+    color: #0B2336;
 `
 
 const TitleText02 = styled(Box)`
@@ -1050,16 +1171,16 @@ const TitleText02 = styled(Box)`
 
 const ModalBox = styled(Box)`
     display: flex;
-    width: 350px;
+    width: 400px;
     flex-direction: column;
-    background-color: white;
+    background-color: #D4EEE9;
     border: none;
     position: relative;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     backdrop-filter: blur(100px)!important;
-    border-radius: 20px!important;
+    border-radius: 24px!important;
     padding: 30px;
     transition: box-shadow 300ms;
     transition: transform 505ms cubic-bezier(0, 0, 0.2, 1) 0ms !important;
@@ -1077,78 +1198,85 @@ const ModalBox = styled(Box)`
     }
 `
 
-
-
-const PoolsPart = styled(Box)`
+const PoolsPart01 = styled(Box)`
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-top: 3%;
-    margin-bottom: 5%;
-    background: #A32A2F;
-    backdrop-filter: blur(100px);
-    border-radius: 30px;
-    transition: .3s;
-    font-family: "Inter",sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    letter-spacing: -.01em;
-    color: white;
-    font-size: 18px;
-    line-height: 24px;
     align-items: center;
-    &:hover{
-        box-shadow: 0 29px 32px rgb(201 155 159 / 100%) ;
-    }
 `
 const Row01 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 5%;
-    width: 90%;
+    width: 100%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    /* identical to box height, or 125% */
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    /* Main/Text */
+    color: #0B2336;
 `
 
 const Row02 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 2%;
-    width: 90%;
-    border-top: 1px solid rgb(255 255 255 /50%);
+    width: 100%;
+    border-top: 1px solid #0B2336;
     padding-top: 2%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #0B2336;
 `
 const Row03 = styled(Box)`
     display: flex;
     flex:1;
     margin-top: 2%;
-    width: 90%;
-    border-top: 1px solid rgb(255 255 255 /50%);
+    width: 100%;
+    border-top: 1px solid #0B2336;
     padding-top: 2%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #0B2336;
     /* margin-bottom: 5%; */
 `
 
 const StyledComponent = styled(Box)`
     display: flex;
     width: 70%;
-    flex-direction: column;
     margin-top: 5%;
+    margin-bottom: 5%;
+    flex-direction: column;
 
 `
 
 const RewardText = styled(Box)`
     display: flex;
     width: 100%;
+    flex-direction: column;
 `
 
 const LeftText01 = styled(Box)`
     display: flex;
     flex: 1;
-    font-family: "Inter",sans-serif;
+    font-family: 'Reckless Neue';
     font-style: normal;
-    font-weight: 600;
-    font-size: 54px;
-    line-height: 36px;
-    letter-spacing: -.01em;
-    color: #05070c;
+    font-weight: 300;
+    font-size: 64px;
+    line-height: 68px;
+    letter-spacing: -0.015em;
+    color: #0B2336;
 `
 // const RightText01 = styled(Box)`
 //     display: flex;
@@ -1170,6 +1298,12 @@ const CenterPart = styled(Box)`
     justify-content: space-between;
     margin-top: 5%;
 `
+const CenterPart01 = styled(Box)`
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 3%;
+`
 
 const DownPart = styled(Box)`
     display: flex;
@@ -1190,23 +1324,23 @@ const DownPart = styled(Box)`
 
 const Left01 = styled(Box)`
     display: flex;
-    width: 30%;
+    width: 48%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #A32A2F;
+    background: #0B2336;
     backdrop-filter: blur(100px);
-    border-radius: 30px;
+    border-radius: 24px;
     transition: .3s;
-    height:414px;
+    height:330px;
     &:hover{
-        box-shadow: 0 29px 32px rgb(201 155 159 / 100%);
+        box-shadow: 0 15px 15px rgb(0 0 0 / 30%);
     }
 `
 
 const Center01 = styled(Box)`
     display: flex;
-    width: 30%;
+    width: 48%;
     flex-direction:column;
     align-items: center;
     justify-content: center;
@@ -1222,83 +1356,93 @@ const Center01 = styled(Box)`
 
 const Right01 = styled(Box)`
     display: flex;
-    width: 30%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height:414px;
+    width: 48%;
+    height:150px;
 
 `
 const Part01 = styled(Box)`
     display: flex;
-    background: #A32A2F;
+    background: #0B2336;
     backdrop-filter: blur(100px);
-    border-radius: 30px;
+    border-radius: 24px;
     transition: .3s;
     &:hover{
-        box-shadow: 0 29px 32px rgb(201 155 159 / 100%);
+        box-shadow: 0 15px 15px rgb(0 0 0 / 30%);
     }
 `
 
 const SmText01 = styled(Box)`
     display: flex;
     flex:1;
-    width: 100%;
+    width: 80%;
     align-items: center;
-    justify-content: center;
-    font-family: "Inter",sans-serif;
+    justify-content: flex-start;
+    font-family: 'Radio Grotesk';
     font-style: normal;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 32px;
-    text-align: center;
-    letter-spacing: -.01em;
-    color: white;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    /* identical to box height, or 125% */
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #D4EEE9;
+    border-bottom: 1px solid #D4EEE9;
 `
 
 const BgText01 = styled(Box)`
     display: flex;
-    flex:2;
-    width: 100%;
+    flex:1.5;
+    width: 80%;
     align-items: center;
-    justify-content: center;
-    font-family: "Inter",sans-serif;
+    justify-content: flex-start;
+    font-family: 'Reckless Neue';
     font-style: normal;
-    font-weight: 600;
-    text-align: center;
-    letter-spacing: -.01em;
+    font-weight: 300;
     font-size: 40px;
-    line-height: 40px;
-    color: white;
+    line-height: 60px;
+/* identical to box height, or 150% */
+    letter-spacing: -0.015em;
+    color: #D4EEE9;
 `
 const Bgtext02 = styled(Box)`
     display: flex;
     flex: 1;
     justify-content: center;
     align-items: center;
-    font-family: "Inter",sans-serif;
+    font-family: 'Reckless Neue';
     font-style: normal;
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 24px;
-    text-align: center;
-    letter-spacing: -.01em;
-    color: white;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 36px;
+    /* identical to box height, or 164% */
+    color: #D4EEE9;
 `
 const SmText03 = styled(Box)`
     display: flex;
     flex: 1;
+    width: 100%;
     justify-content: center;
-    align-items: flex-end;
-    font-family: "Inter",sans-serif;
+    align-items: center;
+    font-family: 'Radio Grotesk';
     font-style: normal;
     font-weight: 400;
-    line-height: 24px;
-    text-align: center;
-    letter-spacing: -.01em;
-    color: white;
+    font-size: 22px;
+    line-height: 28px;
+    /* identical to box height, or 127% */
+    color: #D4EEE9;
 `
-
+const SmText05 = styled(Box)`
+    display: flex;
+    flex: 1;
+    width:80%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 28px;
+    /* identical to box height, or 127% */
+    color: #D4EEE9;
+`
 // const GraphBox = styled(Box)`
 //     display: flex;
 //     flex: 2;
@@ -1325,15 +1469,15 @@ const ConnectWalletBtn01 = styled(Box)`
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 40px;
-    background: rgba(0,0,0,.3);
-    border-radius: 8px;
-    font-family: "Inter",sans-serif;
+    height: 56px;
+    background: linear-gradient(180deg, #EDF9CC 0%, #D4EEE9 100%), linear-gradient(0deg, #F9E0E0, #F9E0E0), linear-gradient(0deg, #D4EEE9, #D4EEE9), #EDF9CC;
+    border-radius: 100px;
+    font-family: 'Radio Grotesk';
     font-style: normal;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 16px;
-    line-height: 32px;
-    color: white;
+    line-height: 24px;
+    color: #0B2336;
     border: none;
     padding: 8px 16px;
     cursor: pointer;
@@ -1343,9 +1487,7 @@ const ConnectWalletBtn01 = styled(Box)`
     transition: .3s;
     &:hover{
         cursor: pointer;
-        background: rgba(0,0,0,.5);
-        box-shadow: 0 10px 10px rgb(0 0 0 / 30%);
-        cursor: pointer;
+        box-shadow: 0 5px 5px rgb(255 255 255 / 30%);
         transition: .2s;
     }
 `
@@ -1363,6 +1505,62 @@ const SmText02 = styled(Box)`
     color: white;
 `
 
+const LeftText02 = styled(Box)`
+    display: flex;
+    margin-top: 3%;
+    font-family: 'Reckless Neue';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 36px;
+    color: #0B2336;
+`
+
+const LeftSector01 = styled(Box)`
+    display: flex;
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+    border-left: 1px solid #0B2336;
+`
+
+const LeftSector01Text = styled(Box)`
+    display: flex;
+    margin-top: 15%;
+    font-family: 'Radio Grotesk';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    /* identical to box height, or 125% */
+
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+
+    color: #0B2336;
+`
+
+const CenterSector01 = styled(Box)`
+    display: flex;
+    flex: 4;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+`
+
+const CenterSector02 = styled(Box)`
+    display: flex;
+    flex: 5;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+`
+
+const RightSector01 = styled(Box)`
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+`
 // const SizeBox = styled(Box)`
 //     display: flex;
 //     position: absolute;

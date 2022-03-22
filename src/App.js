@@ -48,7 +48,7 @@ const App = () => {
     <>
       <Box display={"flex"} flexDirection={"column"} alignItems="center" >
         <BrowserRouter>
-          <Header  setModal={setOpen} wConnect={wConnect}></Header>
+          <Header setModal={setOpen} wConnect={wConnect}></Header>
           <Routes>
             <Route path="/" element={<Content modalFlag={open} setModal={setOpen} />} />
             <Route path="/reward" element={<Reward modalFlag={open} setModal={setOpen} />} />
@@ -174,7 +174,7 @@ const ModalBox = styled(Box)`
   width: 350px;
   height: 400px;
   flex-direction: column;
-  background-color: white;
+  background-color: #D4EEE9;
   border: none;
   position: relative;
   top: 50%;
