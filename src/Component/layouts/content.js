@@ -220,7 +220,7 @@ const Content = ({ modalFlag, setModal }) => {
 
   const get_mc_apr = async () => {
     try {
-      let apr = await requestAPICall("http://54.176.148.247:8000/api/staking/getAPR");
+      let apr = await requestAPICall("https://54.176.148.247:8000/api/staking/getAPR");
       if(apr.data)
       {
         set_mc_apr(parseInt(apr.data.data.trvlStaking));
