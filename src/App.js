@@ -1,10 +1,10 @@
-import './App.css';
+import "./App.css";
 import React, { useState, useEffect } from "react";
 import { Box, Modal } from "@material-ui/core";
-import Header from './Component/layouts/header';
-import Content from './Component/layouts/content';
+import Header from "./Component/layouts/header";
+import Content from "./Component/layouts/content";
 import Reward from "./Component/layouts/reward";
-import styled from 'styled-components';
+import styled from "styled-components";
 import MetaMaskImg from "./assets/metamask.png";
 import Coin98Img from "./assets/coin98.png";
 import CoinbaseImg from "./assets/coinbase.svg";
@@ -29,6 +29,7 @@ const App = () => {
   const { account, activate } = useWeb3React();
 
   const handleConnect = async (currentConnector) => {
+    console.log("wallet", walletConnectors["MetaMask"]);
     await activate(walletConnectors[currentConnector]);
     set_wConnect(walletConnectors[currentConnector]);
     window.localStorage.setItem("CurrentWalletConnect", currentConnector);
@@ -41,12 +42,13 @@ const App = () => {
   // };
 
   useEffect(() => {
-    const currentWalletState = window.localStorage.getItem("CurrentWalletConnect");
+    // const currentWalletState = window.localStorage.getItem("CurrentWalletConnect");
+    const currentWalletState = "MetaMask";
     currentWalletState && activate(walletConnectors[currentWalletState]);
   }, []);
   return (
     <>
-      <Box display={"flex"} flexDirection={"column"} alignItems="center" >
+      <Box maxWidth={"1440px"} width={"100%"} display={"flex"} flexDirection={"column"} alignItems="center" boxSizing={"border-box"} sx={{ px: { xs: "24px", sm: "64px", md: "108px" } }}>
         <BrowserRouter>
           <Header setModal={setOpen} wConnect={wConnect}></Header>
           <Routes>
@@ -59,19 +61,23 @@ const App = () => {
             <UpText>Select Wallet</UpText>
             <DownText>Connect to the site below with one of our available wallet providers.</DownText>
             <ConnectPart>
-              <ConnectWallet onClick={() => {
-                handleConnect("MetaMask");
-              }}>
-                <Box display={"flex"} marginLeft={"5%"} >
+              <ConnectWallet
+                onClick={() => {
+                  handleConnect("MetaMask");
+                }}
+              >
+                <Box display={"flex"} marginLeft={"5%"}>
                   Metamask
                 </Box>
                 <Box display={"flex"} marginRight={"5%"}>
                   <img src={MetaMaskImg} width={"24px"} height={"24px"} alt="" />
                 </Box>
               </ConnectWallet>
-              <ConnectWallet onClick={() => {
-                handleConnect("TrustWallet");
-              }}>
+              <ConnectWallet
+                onClick={() => {
+                  handleConnect("TrustWallet");
+                }}
+              >
                 <Box display={"flex"} marginLeft={"5%"}>
                   Coinbase Wallet
                 </Box>
@@ -79,9 +85,11 @@ const App = () => {
                   <img src={CoinbaseImg} width={"24px"} height={"24px"} alt="" />
                 </Box>
               </ConnectWallet>
-              <ConnectWallet onClick={() => {
-                handleConnect("WalletConnect");
-              }}>
+              <ConnectWallet
+                onClick={() => {
+                  handleConnect("WalletConnect");
+                }}
+              >
                 <Box display={"flex"} marginLeft={"5%"}>
                   WalletConnect
                 </Box>
@@ -89,9 +97,11 @@ const App = () => {
                   <img src={WalletConnectImg} width={"24px"} height={"24px"} alt="" />
                 </Box>
               </ConnectWallet>
-              <ConnectWallet onClick={() => {
-                handleConnect("MetaMask");
-              }}>
+              <ConnectWallet
+                onClick={() => {
+                  handleConnect("MetaMask");
+                }}
+              >
                 <Box display={"flex"} marginLeft={"5%"}>
                   Coin98
                 </Box>
@@ -110,7 +120,7 @@ const App = () => {
     //   <Modal handler={this.handler} IsShowModal={this.state.IsShowModal} />
     // </div>
   );
-}
+};
 
 const ConnectWallet = styled(Box)`
   display: flex;
@@ -122,82 +132,79 @@ const ConnectWallet = styled(Box)`
   align-items: center;
   background: #f1f3f5;
   border-radius: 8px;
-  &:hover{
+  &:hover {
     cursor: pointer;
-    transition: .3s;
+    transition: 0.3s;
     background: #e1e3e5;
   }
-`
+`;
 
 const ConnectPart = styled(Box)`
   display: flex;
   flex: 4;
   flex-direction: column;
-  font-family: "Inter",sans-serif!important;
+  font-family: "Inter", sans-serif !important;
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
   line-height: 100%;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   color: #05070c;
-`
+`;
 
 const UpText = styled(Box)`
   display: flex;
-  flex:1;
+  flex: 1;
   align-items: center;
-  font-family: "Inter",sans-serif!important;
+  font-family: "Inter", sans-serif !important;
   font-style: normal;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   font-weight: 600;
   font-size: 24px;
   line-height: 100%;
   color: #05070c;
-
-`
+`;
 const DownText = styled(Box)`
   display: flex;
-  flex:1;
+  flex: 1;
   align-items: flex-start;
   font-weight: 400;
   font-size: 16px;
   line-height: 120%;
-  font-family: "Inter",sans-serif!important;
+  font-family: "Inter", sans-serif !important;
   font-style: normal;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   color: #05070c;
-
-`
+`;
 
 const ModalBox = styled(Box)`
   display: flex;
   width: 350px;
   height: 400px;
   flex-direction: column;
-  background-color: #D4EEE9;
+  background-color: #d4eee9;
   border: none;
   position: relative;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  backdrop-filter: blur(100px)!important;
-  border-radius: 20px!important;
+  backdrop-filter: blur(100px) !important;
+  border-radius: 20px !important;
   padding: 30px;
   transition: box-shadow 300ms;
   transition: transform 505ms cubic-bezier(0, 0, 0.2, 1) 0ms !important;
   outline: none;
   animation: back_animation1 0.5s 1;
-    animation-timing-function: ease;
-    animation-fill-mode: forwards;
-    @keyframes back_animation1 {
-        0% {
-            opacity: 0%;
-        }
-        100% {
-            opacity: 100%;
-        }
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  @keyframes back_animation1 {
+    0% {
+      opacity: 0%;
     }
-`
-
+    100% {
+      opacity: 100%;
+    }
+  }
+`;
 
 export default App;

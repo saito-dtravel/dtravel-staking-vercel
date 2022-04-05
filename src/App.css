@@ -7,6 +7,21 @@ div {
   display: block;
 }
 
+#root {
+  display: flex;
+  justify-content: center;
+}
+
+@font-face {
+  font-family: "Radio Grotesk";
+  src: url("./static/prod/fonts/RadioGrotesk-Regular.otf");
+}
+
+@font-face {
+  font-family: "Reckless Neue";
+  src: url("./static/prod/fonts/RecklessNeue-Regular.ttf");
+}
+
 a {
   text-decoration: none;
   color: #05070c;
@@ -18,13 +33,13 @@ a {
   display: none;
 }
 
-@media only screen and (max-width: 900px){
+@media only screen and (max-width: 900px) {
   .mobileLogo {
     display: inline-block;
   }
 }
 
-@media only screen and (max-width: 900px){
+@media only screen and (max-width: 900px) {
   .desktopLogo {
     display: none;
   }
@@ -36,7 +51,7 @@ a {
   border: none;
   padding: 16px;
   margin-top: 4px;
-  transition: .3s;
+  transition: 0.3s;
   cursor: pointer;
 }
 
@@ -46,17 +61,17 @@ a {
 }
 
 .menu-button:hover {
-  background: rgba(0,0,0,.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
-@media only screen and (min-width: 900px){
+@media only screen and (min-width: 900px) {
   .menu-button {
     display: none;
   }
 }
 
 .staking-container {
-  background-size: 100% 100%!important;
+  background-size: 100% 100% !important;
   padding-top: 40px;
   /* padding-bottom: 80px; */
   background-position: 50%;
@@ -73,7 +88,7 @@ a {
   z-index: 10;
 }
 
-@media only screen and (max-width: 1200px){
+@media only screen and (max-width: 1200px) {
   .staking-nav-container {
     padding-left: 16px;
     padding-right: 16px;
@@ -94,23 +109,23 @@ a {
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
-  transition: .3s;
+  transition: 0.3s;
   cursor: pointer;
   margin-right: 8px;
   font-weight: bold;
 }
 
-@media only screen and (max-width: 900px){
+@media only screen and (max-width: 900px) {
   .staking-nav-tab {
     display: none;
   }
 }
 .staking-nav-tab:hover {
-  background: rgba(0,0,0,.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .nav-disabled {
-  color: rgba(0,0,0,.2)!important;
+  color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .is-active .staking-nav-tab {
@@ -122,24 +137,24 @@ a {
   font-style: normal;
   font-size: 18px;
   line-height: 32px;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   color: #ffffff;
   border-radius: 8px;
-  background:  #a32a2f;
+  background: #a32a2f;
   border: none;
   padding: 8px 16px;
-  transition: .3s;
+  transition: 0.3s;
 }
 
-@media only screen and (max-width: 900px){
+@media only screen and (max-width: 900px) {
   .staking-nav-wallet-button {
     display: none;
-    background: rgba(0,0,0,.05);
+    background: rgba(0, 0, 0, 0.05);
     box-shadow: none;
   }
 }
 
-.staking-nav-contents-container>button {
+.staking-nav-contents-container > button {
   margin: 8px;
   display: flex;
   cursor: pointer;
@@ -147,7 +162,7 @@ a {
 
 .staking-nav-wallet-button:hover {
   box-shadow: none;
-  background:  #a32a2f;
+  background: #a32a2f;
 }
 
 .chart-gradient {
