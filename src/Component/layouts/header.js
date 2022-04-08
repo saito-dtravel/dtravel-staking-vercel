@@ -13,6 +13,7 @@ const Header = ({ setModal, wConnect }) => {
   const [flag_drop, set_drop] = useState(false);
   const { account, active, deactivate } = useWeb3React();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [current_tab, set_current_tab] = useState(0);
   const price = useGetPrice();
   return (
     <StyledComponent>
@@ -23,28 +24,58 @@ const Header = ({ setModal, wConnect }) => {
         onClick={() => {
           navigate("/");
           window.scrollTo(0, 0);
+          set_current_tab(0);
         }}
       >
         <LogoIcon size={"40px"} color="#0B2336" />
         <Box fontSize={"20px"}>TRVL</Box>
       </Mark>
       <HambergerMenu bgcolor={"#d4eeea"} width={"100%"} flex={1} display={"flex"} alignItems={"center"} gridColumnGap={"56px"} gridRowGap={"16px"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, position: { xs: "absolute", sm: "absolute", md: "static" }, top: "100%" }} zIndex={11} p={"16px"} borderRadius={"0px 0px 10px 10px"} visible={menuVisible} boxSizing={"border-box"}>
-        <LinkButton
-          onClick={() => {
-            navigate("/");
-            window.scrollTo(0, 0);
-          }}
-        >
-          Overview
-        </LinkButton>
-        <LinkButton
-          onClick={() => {
-            navigate("/reward");
-            window.scrollTo(0, 0);
-          }}
-        >
-          Rewards
-        </LinkButton>
+        {current_tab == 0 ? <>
+          <ActivedLinkButton
+            onClick={() => {
+              navigate("/");
+              window.scrollTo(0, 0);
+              set_current_tab(0);
+            }}
+          >
+            Overview
+          </ActivedLinkButton>          
+        </> :
+        <>
+          <LinkButton
+            onClick={() => {
+              navigate("/");
+              window.scrollTo(0, 0);
+              set_current_tab(0);
+            }}
+          >
+            Overview
+          </LinkButton>
+        </>}
+
+        {current_tab == 1 ? <>
+          <ActivedLinkButton
+            onClick={() => {
+              navigate("/reward");
+              window.scrollTo(0, 0);
+              set_current_tab(1);
+            }}
+          >
+            Rewards
+          </ActivedLinkButton>       
+        </> :
+        <>
+          <LinkButton
+            onClick={() => {
+              navigate("/reward");
+              window.scrollTo(0, 0);
+              set_current_tab(1);
+            }}
+          >
+            Rewards
+          </LinkButton>
+        </>}
         <Box display={"flex"} alignItems={"center"} gridGap={"8px"} sx={{ ml: ["unset", "unset", "auto"] }}>
           TRVL Price:
           <Box>
@@ -187,6 +218,29 @@ const LinkButton = styled(Box)`
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
+  line-height: 32px;
+  color: #0b2336;
+  background: 0;
+  border: none;
+  /* padding: 8px 16px;
+    border-radius: 8px; */
+  /* transition: .3s; */
+  cursor: pointer;
+  border-bottom: 2px solid rgba(0, 0, 0, 0);
+
+  &:hover {
+    border-bottom: 2px solid #0b2336;
+
+    /* background: rgba(0,0,0,.05); */
+  }
+`;
+
+const ActivedLinkButton = styled(Box)`
+  display: flex;
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 17px;
   line-height: 32px;
   color: #0b2336;
   background: 0;

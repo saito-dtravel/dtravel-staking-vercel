@@ -8,7 +8,7 @@ import Mark01 from "../../assets/dtravle_mark01.png";
 import { useWeb3React } from "@web3-react/core";
 import { ethers } from "ethers";
 import { Moralis } from "moralis"
-import { CONTRACTS, serverUrl, appId, masterKey} from "../../utils/constants";
+import { CONTRACTS, serverUrl, appId, masterKey, TRANSACTION_SCAN_URL} from "../../utils/constants";
 import {requestAPICall} from "../../utils/helpers/apiService"
 import { MC_ABI, SMC_ABI, LP_MC_ABI, LP_SMC_ABI, FREE_TRVL_ABI } from "../../utils/abi";
 import CustomButton from "../elements/buttons";
@@ -29,7 +29,6 @@ const Content = ({ modalFlag, setModal }) => {
   const [total_stake, set_total_stake] = useState(0);
   const [total_trvl_stake, set_total_trvl_stake] = useState(0);
   const [total_free_trvl_stake, set_total_free_trvl_stake] = useState(0);
-  const [user_total_rewards, set_user_total_rewards] = useState(0);
   const [total_claim_rewards, set_total_claim_rewards] = useState(0);
   const [total_trvl_reward, set_total_trvl_reward] = useState(0);
   const [total_free_trvl_reward, set_total_free_trvl_reward] = useState(0);
@@ -59,6 +58,7 @@ const Content = ({ modalFlag, setModal }) => {
   const [user_total_stake, set_user_total_stake] = useState(0);
   const [user_total_trvl_stake, set_user_total_trvl_stake] = useState(0);
   const [user_free_trvl_stake, set_user_free_trvl_stake] = useState(0);
+  const [user_total_rewards, set_user_total_rewards] = useState(0);
 
   const [flag_spin_load, set_spin_load] = useState(false);
   const [flag_spin_load_free, set_spin_load_free] = useState(false);
@@ -113,12 +113,14 @@ const Content = ({ modalFlag, setModal }) => {
       }
       const stake_mc = await SMC_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
       await stake_mc.wait();
-      NotificationManager.success("Successed. See your results.", "Hi.", 3000);
+      NotificationManager.success("Deposited successfully. See your result : " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
+      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + stake_mc.hash)});
       setTimeout(() => {
         get_total_stake();
         set_spin_load(false);
         get_rewards();
         get_balance();
+        get_pools();
         // get_mc_apr();
         set_amount(0);
         set_locked(false);
@@ -169,6 +171,7 @@ const Content = ({ modalFlag, setModal }) => {
 
   const get_balance = async () => {
     try{
+      console.log(serverUrl, appId, masterKey)
       await Moralis.start({ serverUrl, appId, masterKey });
       const tokens = await Moralis.Web3API.account.getTokenBalances({chain: "bsc testnet", address: account});
       console.log("tokens", tokens);
@@ -191,12 +194,15 @@ const Content = ({ modalFlag, setModal }) => {
       await approve.wait();
       const stake_mc = await FREE_TRVL_CONTRACT.stake("0x" + amount_wei.toString(16));
       await stake_mc.wait();
-      NotificationManager.success("Successed. See your results.", "Hi.", 3000);
+      console.log("stake mc", stake_mc);
+      NotificationManager.success("Deposited successfully.  See your result: " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
+      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + stake_mc.hash)});
       setTimeout(() => {
         handleClose();
         get_free_trvl_staked_value();
         set_spin_load(false);
         set_amount(0);
+        get_total_stake();
         // get_mc_apr();
       }, 3000);
     } catch (err) {
@@ -212,7 +218,7 @@ const Content = ({ modalFlag, setModal }) => {
   const get_free_trvl_staked_value = async () => {
     try {
       let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
-      set_user_free_trvl_stake(parseInt(t_value._hex) / Math.pow(10, 18));
+      set_user_free_trvl_stake((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
     } catch (err) {
       console.log(err);
     }
@@ -220,7 +226,8 @@ const Content = ({ modalFlag, setModal }) => {
 
   const get_mc_apr = async () => {
     try {
-      let apr = await requestAPICall("https://54.176.148.247:8000/api/staking/getAPR");
+      let apr = await requestAPICall(process.env.REACT_APP_API_URL + "staking/getAPR");
+      console.log("apr", process.env.REACT_APP_API_URL + "staking/getAPR");
       if(apr.data)
       {
         set_mc_apr(parseInt(apr.data.data.trvlStaking));
@@ -299,9 +306,11 @@ const Content = ({ modalFlag, setModal }) => {
     try {
       const unstake_mc = await SMC_Contract.withdraw(index, account);
       await unstake_mc.wait();
-      NotificationManager.success("Successed. See your results.", "Hi.", 3000);
+      NotificationManager.success("Unstaked successfully.  See your result: " + unstake_mc.hash.toString().slice(0, 10) + "..." + unstake_mc.hash.toString().slice(-4), 
+      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + unstake_mc.hash)});
       get_total_stake();
       get_rewards();
+      get_pools();
       // get_total_lp_stake();
     } catch (err) {
       console.log(err);
@@ -326,11 +335,13 @@ const Content = ({ modalFlag, setModal }) => {
       set_spin_load_free(true);
       const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x" + (amount_free * Math.pow(10, 18)).toString(16));
       await unstake_free1.wait();
-      NotificationManager.success("Successed. See your results.", "Hi.", 3000);
+      NotificationManager.success("Unstaked successfully.  See your result: " + unstake_free1.hash.toString().slice(0, 10) + "..." + unstake_free1.hash.toString().slice(-4), 
+      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + unstake_free1.hash)});
       setTimeout(() => {
         handleClose2();
         get_free_trvl_staked_value();
         set_spin_load_free(false);
+        get_total_stake();
         set_amount_free(0);
       }, 3000);
     } catch (err) {
@@ -370,6 +381,8 @@ const Content = ({ modalFlag, setModal }) => {
 
   useEffect(() => {
     if (active === false) {
+      set_user_total_stake(0);
+      set_user_total_rewards(0);
     } else {
       get_total_stake();
       // get_total_lp_stake();
@@ -394,7 +407,7 @@ const Content = ({ modalFlag, setModal }) => {
             <CenterSector01>
               <RewardText>
                 <LeftText01>Overview</LeftText01>
-                <LeftText02>We offer staking pools for TRVL and for LP tokens associated with TRVL, whith various look-up conditions</LeftText02>
+                <LeftText02>We offer staking pools for TRVL with various lock-up conditions.</LeftText02>
               </RewardText>
               <CenterPart sx={{ flexDirection: { xs: "column", sm: "column", md: "row" } }}>
                 <Left01>
@@ -484,7 +497,7 @@ const Content = ({ modalFlag, setModal }) => {
                   <RewardText>
                     <LeftText01>Pools Information</LeftText01>
                     <LeftText03>
-                      These are available staking pools for TRVL and LP tokens related to TRVL. Staking contracts have been audited by{" "}
+                    These are the available staking pools. Staking contracts have been audited by {" "}
                       <Box display={"inline"} style={{ textDecoration: "underline" }}>
                         PeckShield
                       </Box>
@@ -494,7 +507,7 @@ const Content = ({ modalFlag, setModal }) => {
                   <PoolsPart01>
                     <Row01 sx={{ display: { xs: "none", sm: "none", md: "flex" } }}>
                       <Box display={"flex"} flex="1" alignItems={"center"}>
-                        Care Pools
+                        Pools
                       </Box>
                       <Box display={"flex"} flex="1" alignItems={"center"}>
                         Total Value Locked
@@ -515,7 +528,7 @@ const Content = ({ modalFlag, setModal }) => {
                       </Box>
                       <Box display={"flex"} flex="1" alignItems={"center"}>
                         <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>TVL :&nbsp;</Box>
-                        ${(total_trvl_stake * price).toFixed(2)}
+                        $ {(total_trvl_stake * price).toFixed(2)}
                       </Box>
                       <Box display={"flex"} flex="0.6" alignItems={"center"}>
                         <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>APR :&nbsp;</Box>
@@ -605,7 +618,7 @@ const Content = ({ modalFlag, setModal }) => {
                       </Box>
                       <Box display={"flex"} flex="1" alignItems={"center"}>
                         <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>TVL :&nbsp;</Box>
-                        ${(total_free_trvl_stake * price).toFixed(2)}
+                        $ {(total_free_trvl_stake * price).toFixed(2)}
                       </Box>
                       <Box display={"flex"} flex="0.6" alignItems={"center"}>
                         <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>APR :&nbsp;</Box>
@@ -671,7 +684,7 @@ const Content = ({ modalFlag, setModal }) => {
                         Unlock Time
                       </Box>
                       <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
-                        Avaliable For Claim
+                        Available For Claim
                       </Box>
                       <Box display={"flex"} flex="1" alignItems={"center"} justifyContent={""}>
                         APR
@@ -692,7 +705,7 @@ const Content = ({ modalFlag, setModal }) => {
                             <Box display={"flex"} flex="1.6" alignItems={"center"} justifyContent={"space-between"}>
                               <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>Staked Amount</Box>
                               {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)} TRVL<br/>
-                              (${(parseInt(pool.amount._hex) / Math.pow(10, 18) * price).toFixed(2)})
+                              ($ {(parseInt(pool.amount._hex) / Math.pow(10, 18) * price).toFixed(2)})
                             </Box>
                             <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={"space-between"} marginRight={"1%"}>
                               <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>Lock Time</Box>
@@ -745,7 +758,7 @@ const Content = ({ modalFlag, setModal }) => {
                             <Box display={"flex"} flex="1.5" alignItems={"center"}>
                               <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>Staked Amount</Box>
                               {(parseInt(pool.amount._hex) / Math.pow(10, 18)).toFixed(2)} TRVL<br/>
-                              (${(parseInt(pool.amount._hex) / Math.pow(10, 18) * price).toFixed(2)})
+                              ($ {(parseInt(pool.amount._hex) / Math.pow(10, 18) * price).toFixed(2)})
                             </Box>
                             <Box display={"flex"} flex="1.2" alignItems={"center"} marginRight={"1%"}>
                               <Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>Lock Time</Box>
@@ -795,8 +808,8 @@ const Content = ({ modalFlag, setModal }) => {
                           </Box>
                         </Box>
                         <Box display={"flex"} flex="1.6" alignItems={"center"} justifyContent={""}>
-                          {user_free_trvl_stake} FREE TRVL<br/>
-                          (${(user_free_trvl_stake * price).toFixed(2)})
+                          {user_free_trvl_stake} TRVL<br/>
+                          ($ {(user_free_trvl_stake * price).toFixed(2)})
                         </Box>
                         <Box display={"flex"} flex="1.2" alignItems={"center"} justifyContent={""} marginRight={"1%"}>
                           No Lock Time
@@ -884,18 +897,6 @@ const Content = ({ modalFlag, setModal }) => {
                   <Box>{user_total_trvl_stake} TRVL</Box>
                 </Box>
               </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
-                <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
-                  <Box fontWeight={"bold"}>Start date:</Box>
-                  <Box>2022/01/01 14:20</Box>
-                </Box>
-              </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
-                <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
-                  <Box fontWeight={"bold"}>End date:</Box>
-                  <Box>2022/03/03 20:14</Box>
-                </Box>
-              </Box>
               <Box width={"100%"} maxWidth={"416px"} display={"flex"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <CustomButton
                   str={"Go back"}
@@ -964,18 +965,6 @@ const Content = ({ modalFlag, setModal }) => {
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>My liquidity:</Box>
                   <Box>{user_free_trvl_stake} TRVL</Box>
-                </Box>
-              </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
-                <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
-                  <Box fontWeight={"bold"}>Start date:</Box>
-                  <Box>2022/01/01 14:20</Box>
-                </Box>
-              </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
-                <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
-                  <Box fontWeight={"bold"}>End date:</Box>
-                  <Box>2022/03/03 20:14</Box>
                 </Box>
               </Box>
               <Box width={"100%"} maxWidth={"416px"} display={"flex"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
@@ -1127,74 +1116,79 @@ const Content = ({ modalFlag, setModal }) => {
               </Box>
             </>
           )}
+
           <Box
-            display={"flex"}
-            justifyContent={"flex-end"}
-            gridGap={"16px"}
-            width={"100%"}
-            marginTop={"32px"}
-            position={"relative"}
-            onClick={() => {
-              if (flag_flag_staking_modal === 0) {
-                if (flag_spin_load === true) {
-                  NotificationManager.error("Please wait while processing.", "Hi.", 2000);
-                  return;
-                }
-                if (amount <= 0)
-                {
-                  NotificationManager.error("Staking amount should bigger than 0.", "Hi.", 2000);
-                  return;
-                }
-                stake();
-              } 
-              // else if (flag_flag_staking_modal === 1) {
-              //   if (flag_spin_load === true) {
-              //     NotificationManager.error("Please wait while processing.", "Hi.", 2000);
-              //     return;
-              //   }
-              //   stake_lp();
-              // } 
-              else if (flag_flag_staking_modal === 2) {
-                if (flag_spin_load === true) {
-                  NotificationManager.error("Please wait while processing.", "Hi.", 2000);
-                  return;
-                }
-                stake_free();
-              }
-            }}
-          >
-            {flag_spin_load ? (
-              flag_flag_staking_modal === 2?(
-                <Box display={"flex"} position={"absolute"} left={"50%"} justifyContent={"center"} alignItems={"center"} top="-200%">
-                <TailSpin color="#05070c" height={35} width={35} />
-                </Box>
-              ) : (
-                <Box display={"flex"} position={"absolute"} left={"50%"} justifyContent={"center"} alignItems={"center"} top="-300%">
-                  <TailSpin color="#05070c" height={35} width={35} />
-                </Box>
-              )
-            ) : (
-              <></>
-            )}
-            <CustomButton
-              str={"Cancel"}
-              width={"150px"}
-              height={"56px"}
-              color={"#0B2336"}
-              bgcolor={"#D4EEE9"}
-              border={"1px solid #0B2336"}
-              fsize={"16px"}
-              fweight={"600"}
-              bradius={"100px"}
+          display={"flex"}
+          justifyContent={"flex-end"}
+          gridGap={"16px"}
+          width={"100%"}
+          marginTop={"32px"}
+          position={"relative"}>
+            <Box>
+              <CustomButton
+                str={"Cancel"}
+                width={"150px"}
+                height={"56px"}
+                color={"#0B2336"}
+                bgcolor={"#D4EEE9"}
+                border={"1px solid #0B2336"}
+                fsize={"16px"}
+                fweight={"600"}
+                bradius={"100px"}
+                onClick={() => {
+                  handleClose();
+                  set_spin_load(false);
+                  set_locked(false);
+                  set_amount(0);
+                  set_duration(0);
+                }}
+              />
+            </Box>
+            <Box
               onClick={() => {
-                handleClose();
-                set_spin_load(false);
-                set_locked(false);
-                set_amount(0);
-                set_duration(0);
+                if (flag_flag_staking_modal === 0) {
+                  if (flag_spin_load === true) {
+                    NotificationManager.error("Please wait while processing.", "Hi.", 2000);
+                    return;
+                  }
+                  if (amount <= 0)
+                  {
+                    NotificationManager.error("Staking amount should bigger than 0.", "Hi.", 2000);
+                    return;
+                  }
+                  stake();
+                } 
+                // else if (flag_flag_staking_modal === 1) {
+                //   if (flag_spin_load === true) {
+                //     NotificationManager.error("Please wait while processing.", "Hi.", 2000);
+                //     return;
+                //   }
+                //   stake_lp();
+                // } 
+                else if (flag_flag_staking_modal === 2) {
+                  if (flag_spin_load === true) {
+                    NotificationManager.error("Please wait while processing.", "Hi.", 2000);
+                    return;
+                  }
+                  stake_free();
+                }
               }}
-            />
-            <CustomButton str={"Stake"} width={"150px"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+            >
+              {flag_spin_load ? (
+                flag_flag_staking_modal === 2?(
+                  <Box display={"flex"} position={"absolute"} left={"50%"} justifyContent={"center"} alignItems={"center"} top="-200%">
+                  <TailSpin color="#05070c" height={35} width={35} />
+                  </Box>
+                ) : (
+                  <Box display={"flex"} position={"absolute"} left={"50%"} justifyContent={"center"} alignItems={"center"} top="-300%">
+                    <TailSpin color="#05070c" height={35} width={35} />
+                  </Box>
+                )
+              ) : (
+                <></>
+              )}
+              <CustomButton str={"Stake"} width={"150px"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+            </Box>
           </Box>
         </ModalBox>
       </Modal>
@@ -1286,7 +1280,6 @@ const Content = ({ modalFlag, setModal }) => {
               handleClose2();
               set_spin_load_free(false);
               set_amount_free(0);
-              NotificationManager.error("Cancelled. Try it again.", "Hi.", 3000);
             }}
           >
             <GiCancel></GiCancel>
@@ -1297,18 +1290,22 @@ const Content = ({ modalFlag, setModal }) => {
             {"\u00a0"}Free TRVL
           </TitleText01>
           <SmText04>Amount</SmText04>
-          <InputAmount
-            component={"input"}
-            value={amount_free}
-            type={"number"}
-            onChange={(e) => {
-              if (flag_spin_load_free === true) {
-                NotificationManager.error("Please wait while processing.", "Hi.", 2000);
-                return;
-              }
-              set_amount_free(e.target.value);
-            }}
-          ></InputAmount>
+          <Box display={"flex"} alignItems={"center"} borderBottom={"1px solid #0b2336"}>
+            <InputAmount
+              component={"input"}
+              width={"100%"}
+              value={amount_free}
+              type={"number"}
+              onChange={(e) => {
+                if (flag_spin_load_free === true) {
+                  NotificationManager.error("Please wait while processing.", "Hi.", 2000);
+                  return;
+                }
+                set_amount_free(e.target.value);
+              }}
+            />
+            <MaxBox01 onClick={() => {set_amount_free(user_free_trvl_stake)}}>max</MaxBox01>
+          </Box>
           <Box
             display={"flex"}
             width={"100%"}

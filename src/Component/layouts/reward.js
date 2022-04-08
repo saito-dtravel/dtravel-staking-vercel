@@ -24,6 +24,7 @@ const Reward = () => {
   const [flag_account, set_flag_account] = useState(false);
   const [rewards, set_rewards] = useState(0);
   const [escrows, set_escrows] = useState(null);
+  const [escrows_count, set_escrows_count] = useState(0);
   const [lp_rewards, set_lp_rewards] = useState(0);
   const [claim_rewards, set_claim_rewards] = useState(0);
   const [free_rewards, set_free_rewards] = useState(0);
@@ -58,7 +59,6 @@ const Reward = () => {
   }, [active]);
 
   useEffect(() =>{
-    console.log(timeLeft);
     const timer = setTimeout(() => {
       calculateTimeLeft();
     }, 1000);
@@ -71,7 +71,6 @@ const Reward = () => {
     var dateNow = new Date(date.toUTCString('en-US', {
       timeZone: 'GMT'
     }));
-    console.log(dateNow);
     // add a day
     var dateOneDayAfter = new Date();
     dateOneDayAfter.setDate(dateNow.getDate() + 1);
@@ -104,8 +103,6 @@ const Reward = () => {
       let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
       // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
       let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
-      console.log("t_rewards", parseInt(t_rewards));
-      console.log("free_rewards", parseInt(free_rewards));
       set_rewards((parseInt(t_rewards._hex) / Math.pow(10, 18)).toFixed(2));
       // set_lp_rewards((parseInt(t_lp_rewards._hex) / Math.pow(10, 18)).toFixed(2));
       set_free_rewards((parseInt(free_rewards) / Math.pow(10, 18)).toFixed(2));
@@ -119,9 +116,9 @@ const Reward = () => {
       console.log("escrow", EMC_Contract);
       let _escrows = await EMC_Contract.getDepositsOf(account);
       // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
-      // console.log('mc_pools', trvl_pools);
-      console.log(_escrows);
+      console.log("_escrows", _escrows.length);
       set_escrows(_escrows);
+      set_escrows_count(_escrows.length);
 
     } catch(err) {
       console.log(err);
@@ -199,7 +196,7 @@ const Reward = () => {
   const get_free_trvl_staked_value = async () => {
     try {
       let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
-      set_free_trvl_staked_value(parseInt(t_value._hex) / Math.pow(10, 18));
+      set_free_trvl_staked_value((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
     } catch (err) {
       console.log(err);
     }
@@ -249,23 +246,26 @@ const Reward = () => {
                 TRVL
               </Box>
               <Box display={"flex"} flex="1" alignItems={"center"}>
-                $ {(user_total_stake * price).toFixed(2)}
+                {user_total_stake} TRVL <br/>
+                {user_total_stake > 0 && <>($ {(user_total_stake * price).toFixed(2)})</>}
               </Box>
               <Box display={"flex"} flex="1" alignItems={"center"}>
                 {rewards} TRVL
+                {rewards > 0 && <>($ {(rewards * price).toFixed(2)})</>}
               </Box>
-              <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
-                <Box
-                  display={"1"}
-                  width={"100%"}
-                  minWidth={"85px"}
-                  onClick={() => {
-                    claim();
-                  }}
-                >
-                  <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
-                </Box>
-              </Box>
+              {rewards > 0 &&
+                <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                  <Box
+                    display={"1"}
+                    width={"100%"}
+                    minWidth={"85px"}
+                    onClick={() => {
+                      claim();
+                    }}
+                  >
+                    {active && <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />}
+                  </Box>
+                </Box>}
             </Row02>
             {/* <Row03 gridRowGap={"16px"} sx={{ flexDirection: ["column", "column", "row"] }}>
               <Box display={"flex"} flex="1.4" alignItems={"center"}>
@@ -308,30 +308,33 @@ const Reward = () => {
                 Free TRVL
               </Box>
               <Box display={"flex"} flex="1" alignItems={"center"}>
-                $ {(free_trvl_staked_value * price).toFixed(2)}
+                {free_trvl_staked_value} TRVL <br/>
+                {free_trvl_staked_value > 0 && <>($ {(free_trvl_staked_value * price).toFixed(2)})</>}  
               </Box>
               <Box display={"flex"} flex="1" alignItems={"center"}>
-                {free_rewards} TRVL
+                {free_rewards} TRVL <br/>
+                {free_rewards > 0 && <>($ {(free_rewards * price).toFixed(2)})</>}                
               </Box>
-              <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
-                <Box
-                  display={"1"}
-                  width={"100%"}
-                  minWidth={"85px"}
-                  onClick={() => {
-                    claim_free();
-                  }}
-                >
-                  <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
-                </Box>
-              </Box>
+              {free_rewards > 0 &&
+                <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                  <Box
+                    display={"1"}
+                    width={"100%"}
+                    minWidth={"85px"}
+                    onClick={() => {
+                      claim_free();
+                    }}
+                  >
+                    {active && <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />}
+                  </Box>
+                </Box>}
             </Row03>
           </PoolsPart>
         </CenterSector01>
         <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
       </RewardsPart>
       <NotificationContainer />
-      <LockRewardsPart pb={"100px"}>
+      {(active && escrows_count > 0) && <><LockRewardsPart pb={"100px"}>
         <Box px={"40px"} borderLeft={"1px solid #0b2336"} sx={{ display: { xs: "none", sm: "none", md: "block" } }}>
           <LeftSector01Text width={"128px"}>LOCKED REWARDS</LeftSector01Text>
         </Box>
@@ -383,8 +386,6 @@ const Reward = () => {
                   <Box display={"flex"} flex="1" alignItems={"center"}>
                   {new Date(parseInt(escrow.end._hex) * 1000).toLocaleDateString("en-US") + " " + new Date(parseInt(escrow.end._hex) * 1000).toLocaleTimeString("en-US")}
                   </Box>
-                  {console.log("NOW", new Date(Date.now()))}
-                  {console.log("END", new Date(parseInt(escrow.end._hex) * 1000))}
                   { Date.now() > new Date(parseInt(escrow.end._hex) * 1000) ? (
                     <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
                       <Box
@@ -410,7 +411,7 @@ const Reward = () => {
           </PoolsPart>
         </CenterSector01>
         <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
-      </LockRewardsPart>
+      </LockRewardsPart></>}
       <NotificationContainer />
     </StyledComponent>
   );

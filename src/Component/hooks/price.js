@@ -7,6 +7,7 @@ export const useGetPrice = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log(process.env);
         let price = await requestAPICall("https://api.coingecko.com/api/v3/simple/price?ids=dtravel&vs_currencies=usd");
         console.log("price", price.data.dtravel.usd);
         set_price(parseFloat(price.data.dtravel.usd));

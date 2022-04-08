@@ -9,7 +9,7 @@ import MetaMaskImg from "./assets/metamask.png";
 import Coin98Img from "./assets/coin98.png";
 import CoinbaseImg from "./assets/coinbase.svg";
 import WalletConnectImg from "./assets/walletConnect.svg";
-import { injected, walletConnect, trustWallet, binance_wallet } from "./utils/connectors";
+import { injected, walletConnect, trustWallet, binance_wallet, CoinbaseWallet } from "./utils/connectors";
 import { useWeb3React } from "@web3-react/core";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -22,28 +22,29 @@ const App = () => {
   const DESKTOP_CONNECTORS = {
     MetaMask: injected,
     WalletConnect: walletConnect,
-    BinanceWallet: binance_wallet,
+    CoinbaseWallet: CoinbaseWallet,
     TrustWallet: trustWallet,
   };
   const walletConnectors = DESKTOP_CONNECTORS;
   const { account, activate } = useWeb3React();
 
   const handleConnect = async (currentConnector) => {
-    console.log("wallet", walletConnectors["MetaMask"]);
+    console.log("wallet", currentConnector,walletConnectors[currentConnector]);
+    console.log("provider", window.ethereum.providers);
     await activate(walletConnectors[currentConnector]);
     set_wConnect(walletConnectors[currentConnector]);
     window.localStorage.setItem("CurrentWalletConnect", currentConnector);
     handleClose();
   };
-  // const handleDisconnect = () => {
-  //   deactivate();
-  //   window.localStorage.removeItem("CurrentWalletConnect");
-  //   window.localStorage.removeItem("CurrentAccount");
-  // };
+  const handleDisconnect = () => {
+    // deactivate();
+    window.localStorage.removeItem("CurrentWalletConnect");
+    window.localStorage.removeItem("CurrentAccount");
+  };
 
   useEffect(() => {
-    // const currentWalletState = window.localStorage.getItem("CurrentWalletConnect");
-    const currentWalletState = "MetaMask";
+    const currentWalletState = window.localStorage.getItem("CurrentWalletConnect");
+    // const currentWalletState = "MetaMask";
     currentWalletState && activate(walletConnectors[currentWalletState]);
   }, []);
   return (
@@ -75,7 +76,7 @@ const App = () => {
               </ConnectWallet>
               <ConnectWallet
                 onClick={() => {
-                  handleConnect("TrustWallet");
+                  handleConnect("CoinbaseWallet");
                 }}
               >
                 <Box display={"flex"} marginLeft={"5%"}>
@@ -99,7 +100,7 @@ const App = () => {
               </ConnectWallet>
               <ConnectWallet
                 onClick={() => {
-                  handleConnect("MetaMask");
+                  handleConnect("TrustWallet");
                 }}
               >
                 <Box display={"flex"} marginLeft={"5%"}>

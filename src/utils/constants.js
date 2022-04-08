@@ -23,7 +23,8 @@ const CONTRACTS = IS_MAINNET
 const serverUrl = "https://ukqbtwjhqpvw.usemoralis.com:2053/server";
 const appId = "t0OjdfZQCncaZy2kGAJ7DrH9txcGJ8EFp09eIejQ";
 const masterKey = "G0HiUC8bLx0MHBjcKzSnmKoJdAxo6ihwafmtz70f";
-export const MORALIS_URL = process.env.MORALIS_URL;
+
+const TRANSACTION_SCAN_URL = "https://testnet.bscscan.com/tx/";
 
 const HTTP_PROVIDER_URL = IS_MAINNET ? "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161" : "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
 
@@ -31,6 +32,7 @@ export {
   IS_MAINNET,
   CONTRACTS,
   HTTP_PROVIDER_URL,
+  TRANSACTION_SCAN_URL,
   serverUrl,
   appId,
   masterKey,
