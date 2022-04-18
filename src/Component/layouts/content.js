@@ -28,19 +28,19 @@ const Content = ({ modalFlag, setModal }) => {
   const { account, active, library } = useWeb3React();
   const [total_stake, set_total_stake] = useState(0);
   const [total_trvl_stake, set_total_trvl_stake] = useState(0);
-  const [total_free_trvl_stake, set_total_free_trvl_stake] = useState(0);
+  // const [total_free_trvl_stake, set_total_free_trvl_stake] = useState(0);
   const [total_claim_rewards, set_total_claim_rewards] = useState(0);
   const [total_trvl_reward, set_total_trvl_reward] = useState(0);
-  const [total_free_trvl_reward, set_total_free_trvl_reward] = useState(0);
+  // const [total_free_trvl_reward, set_total_free_trvl_reward] = useState(0);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [open, setOpen] = useState(false);
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
   const [open1, setOpen1] = useState(false);
-  const handleOpen2 = () => setOpen2(true);
-  const handleClose2 = () => setOpen2(false);
-  const [open2, setOpen2] = useState(false);
+  // const handleOpen2 = () => setOpen2(true);
+  // const handleClose2 = () => setOpen2(false);
+  // const [open2, setOpen2] = useState(false);
   const connect_wallet = () => {
     setModal(!modalFlag);
   };
@@ -57,7 +57,7 @@ const Content = ({ modalFlag, setModal }) => {
   const [total_lp_stake, set_total_lp_stake] = useState(0);
   const [user_total_stake, set_user_total_stake] = useState(0);
   const [user_total_trvl_stake, set_user_total_trvl_stake] = useState(0);
-  const [user_free_trvl_stake, set_user_free_trvl_stake] = useState(0);
+  // const [user_free_trvl_stake, set_user_free_trvl_stake] = useState(0);
   const [user_total_rewards, set_user_total_rewards] = useState(0);
 
   const [flag_spin_load, set_spin_load] = useState(false);
@@ -68,7 +68,7 @@ const Content = ({ modalFlag, setModal }) => {
   const SMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
   // const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_MC_ABI, library.getSigner()) : null), [library]);
   // const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, LP_SMC_ABI, library.getSigner()) : null), [library]);
-  const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
+  // const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
 
   const price = useGetPrice();
   const useStyles = makeStyles((theme) => ({
@@ -186,43 +186,43 @@ const Content = ({ modalFlag, setModal }) => {
     }
   }
 
-  const stake_free = async () => {
-    try {
-      set_spin_load(true);
-      let amount_wei = amount * Math.pow(10, 18);
-      const approve = await MC_Contract.approve(CONTRACTS.FREE_TRVL, "0x" + amount_wei.toString(16));
-      await approve.wait();
-      const stake_mc = await FREE_TRVL_CONTRACT.stake("0x" + amount_wei.toString(16));
-      await stake_mc.wait();
-      console.log("stake mc", stake_mc);
-      NotificationManager.success("Deposited successfully.  See your result: " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
-      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + stake_mc.hash)});
-      setTimeout(() => {
-        handleClose();
-        get_free_trvl_staked_value();
-        set_spin_load(false);
-        set_amount(0);
-        get_total_stake();
-        // get_mc_apr();
-      }, 3000);
-    } catch (err) {
-      console.log(err);
-      NotificationManager.error("Failed. Try it again.", "Hi.", 3000);
-      get_free_trvl_staked_value();
-      set_spin_load(false);
-      set_amount(0);
-      handleClose();
-    }
-  };
+  // const stake_free = async () => {
+  //   try {
+  //     set_spin_load(true);
+  //     let amount_wei = amount * Math.pow(10, 18);
+  //     const approve = await MC_Contract.approve(CONTRACTS.FREE_TRVL, "0x" + amount_wei.toString(16));
+  //     await approve.wait();
+  //     const stake_mc = await FREE_TRVL_CONTRACT.stake("0x" + amount_wei.toString(16));
+  //     await stake_mc.wait();
+  //     console.log("stake mc", stake_mc);
+  //     NotificationManager.success("Deposited successfully.  See your result: " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
+  //     "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + stake_mc.hash)});
+  //     setTimeout(() => {
+  //       handleClose();
+  //       // get_free_trvl_staked_value();
+  //       set_spin_load(false);
+  //       set_amount(0);
+  //       get_total_stake();
+  //       // get_mc_apr();
+  //     }, 3000);
+  //   } catch (err) {
+  //     console.log(err);
+  //     NotificationManager.error("Failed. Try it again.", "Hi.", 3000);
+  //     // get_free_trvl_staked_value();
+  //     set_spin_load(false);
+  //     set_amount(0);
+  //     handleClose();
+  //   }
+  // };
 
-  const get_free_trvl_staked_value = async () => {
-    try {
-      let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
-      set_user_free_trvl_stake((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // const get_free_trvl_staked_value = async () => {
+  //   try {
+  //     let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
+  //     set_user_free_trvl_stake((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   const get_mc_apr = async () => {
     try {
@@ -234,30 +234,6 @@ const Content = ({ modalFlag, setModal }) => {
         set_free_apr(parseInt(apr.data.data.freeTrvlStaking));
         set_lp_apr(parseInt(apr.data.data.lpTrvlStaking));
       }
-      // let locked = await SMC_Contract.getTotalDeposit(account);
-      // let total = await MC_Contract.totalSupply();
-      // let apr = ((100 * parseInt(locked._hex)) / parseInt(total._hex)).toFixed(5);
-      // if (parseFloat(apr) === 0) {
-      //   set_mc_apr(0);
-      // } else {
-      //   set_mc_apr(apr);
-      // }
-      // // let locked1 = await SMC_LP_Contract.getTotalDeposit(account);
-      // // let total1 = await LP_Contract.totalSupply();
-      // // let apr1 = ((100 * parseInt(locked1._hex)) / parseInt(total1._hex)).toFixed(5);
-      // // if (parseFloat(apr1) === 0) {
-      // //   set_lp_apr(0);
-      // // } else {
-      // //   set_lp_apr(apr1);
-      // // }
-      // let locked2 = await FREE_TRVL_CONTRACT.balanceOf(account);
-      // let total2 = await FREE_TRVL_CONTRACT.totalSupply();
-      // let apr2 = ((100 * parseInt(locked2._hex)) / parseInt(total2._hex)).toFixed(5);
-      // if (parseFloat(apr2) === 0) {
-      //   set_free_apr(0);
-      // } else {
-      //   set_free_apr(apr2);
-      // }
     } catch (err) {
       console.log(err);
     }
@@ -265,11 +241,11 @@ const Content = ({ modalFlag, setModal }) => {
 
   const get_rewards = async () => {
     try {
-      console.log(FREE_TRVL_CONTRACT);
       let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
-      let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
+      // let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
       // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
-      set_user_total_rewards(((parseInt(t_rewards._hex) + parseInt(free_rewards)) / Math.pow(10, 18)).toFixed(2));
+      // set_user_total_rewards(((parseInt(t_rewards._hex) + parseInt(free_rewards)) / Math.pow(10, 18)).toFixed(2));
+      set_user_total_rewards(((parseInt(t_rewards._hex)) / Math.pow(10, 18)).toFixed(2));
     } catch (err) {
       console.log(err);
     }
@@ -278,16 +254,18 @@ const Content = ({ modalFlag, setModal }) => {
   const get_total_stake = async () => {
     try {
       const t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
-      const free_t_value = await FREE_TRVL_CONTRACT.totalSupply();
+      // const free_t_value = await FREE_TRVL_CONTRACT.totalSupply();
 
       const user_t_value = await SMC_Contract.getTotalDeposit(account);
-      const user_t_free_value = await FREE_TRVL_CONTRACT.balanceOf(account);
-
-      set_total_stake(((parseInt(t_value._hex) + parseInt(free_t_value))/ Math.pow(10, 18)).toFixed(2));
-      set_total_free_trvl_stake((parseInt(free_t_value) / Math.pow(10, 18)).toFixed(2));
+      // const user_t_free_value = await FREE_TRVL_CONTRACT.balanceOf(account);
+      console.log(user_t_value);
+      // set_total_stake(((parseInt(t_value._hex) + parseInt(free_t_value))/ Math.pow(10, 18)).toFixed(2));
+      set_total_stake(((parseInt(t_value._hex))/ Math.pow(10, 18)).toFixed(2));
+      // set_total_free_trvl_stake((parseInt(free_t_value) / Math.pow(10, 18)).toFixed(2));
       set_total_trvl_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(2));
       set_user_total_trvl_stake((parseInt(user_t_value) / Math.pow(10, 18)).toFixed(2));
-      set_user_total_stake(((parseInt(user_t_value._hex) + parseInt(user_t_free_value)) / Math.pow(10, 18)).toFixed(2));
+      // set_user_total_stake(((parseInt(user_t_value._hex) + parseInt(user_t_free_value)) / Math.pow(10, 18)).toFixed(2));
+      set_user_total_stake(((parseInt(user_t_value._hex)) / Math.pow(10, 18)).toFixed(2));
     } catch (err) {
       console.log(err);
     }
@@ -330,41 +308,40 @@ const Content = ({ modalFlag, setModal }) => {
   //   }
   // };
 
-  const unstake_free = async () => {
-    try {
-      set_spin_load_free(true);
-      const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x" + (amount_free * Math.pow(10, 18)).toString(16));
-      await unstake_free1.wait();
-      NotificationManager.success("Unstaked successfully.  See your result: " + unstake_free1.hash.toString().slice(0, 10) + "..." + unstake_free1.hash.toString().slice(-4), 
-      "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + unstake_free1.hash)});
-      setTimeout(() => {
-        handleClose2();
-        get_free_trvl_staked_value();
-        set_spin_load_free(false);
-        get_total_stake();
-        set_amount_free(0);
-      }, 3000);
-    } catch (err) {
-      console.log(err);
-      NotificationManager.error("Failed. Try it again.", "Hi.", 3000);
-      set_spin_load_free(false);
-      get_free_trvl_staked_value();
-      set_amount_free(0);
-      handleClose2();
-    }
-  };
+  // const unstake_free = async () => {
+  //   try {
+  //     set_spin_load_free(true);
+  //     const unstake_free1 = await FREE_TRVL_CONTRACT.withdraw("0x" + (amount_free * Math.pow(10, 18)).toString(16));
+  //     await unstake_free1.wait();
+  //     NotificationManager.success("Unstaked successfully.  See your result: " + unstake_free1.hash.toString().slice(0, 10) + "..." + unstake_free1.hash.toString().slice(-4), 
+  //     "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + unstake_free1.hash)});
+  //     setTimeout(() => {
+  //       handleClose2();
+  //       get_free_trvl_staked_value();
+  //       set_spin_load_free(false);
+  //       get_total_stake();
+  //       set_amount_free(0);
+  //     }, 3000);
+  //   } catch (err) {
+  //     console.log(err);
+  //     NotificationManager.error("Failed. Try it again.", "Hi.", 3000);
+  //     set_spin_load_free(false);
+  //     get_free_trvl_staked_value();
+  //     set_amount_free(0);
+  //     handleClose2();
+  //   }
+  // };
 
   const get_claimRewads = async () => {
     try {
       let claim_rewards1 = await SMC_Contract.totalClaimReward();
-      let claim_rewards2 = await FREE_TRVL_CONTRACT.totalReward();
-      console.log(claim_rewards2);
-      console.log(FREE_TRVL_CONTRACT);
+      // let claim_rewards2 = await FREE_TRVL_CONTRACT.totalReward();
       // let lp_claim_rewards = await SMC_LP_Contract.totalClaimReward();
       // let total = ((parseInt(claim_rewards1._hex) + parseInt(lp_claim_rewards)) / Math.pow(10, 18)).toFixed(2);
-      let total = ((parseInt(claim_rewards1._hex) + parseInt(claim_rewards2)) / Math.pow(10, 18)).toFixed(2);
+      // let total = ((parseInt(claim_rewards1._hex) + parseInt(claim_rewards2)) / Math.pow(10, 18)).toFixed(2);
+      let total = ((parseInt(claim_rewards1._hex)) / Math.pow(10, 18)).toFixed(2);
       set_total_trvl_reward((parseInt(claim_rewards1._hex) / Math.pow(10, 18)).toFixed(2));
-      set_total_free_trvl_reward((parseInt(claim_rewards2) / Math.pow(10, 18)).toFixed(2));
+      // set_total_free_trvl_reward((parseInt(claim_rewards2) / Math.pow(10, 18)).toFixed(2));
       set_total_claim_rewards(total);
     } catch (err) {
       console.log(err);
@@ -375,7 +352,6 @@ const Content = ({ modalFlag, setModal }) => {
     const trvl_pools = await SMC_Contract.getDepositsOf(account);
     // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
     // console.log('mc_pools', trvl_pools);
-    console.log(trvl_pools);
     set_trvl_pools(trvl_pools);
   };
 
@@ -391,7 +367,7 @@ const Content = ({ modalFlag, setModal }) => {
       get_rewards();
       get_pools();
       get_claimRewads();
-      get_free_trvl_staked_value();
+      // get_free_trvl_staked_value();
     }
     // get_total_staked_amount();
   }, [active]);
@@ -609,7 +585,7 @@ const Content = ({ modalFlag, setModal }) => {
                         </Box>
                       </Box>
                     </Row03> */}
-                    <Row02 sx={{ flexDirection: { xs: "column", sm: "column", md: "row" } }}>
+                    {/* <Row02 sx={{ flexDirection: { xs: "column", sm: "column", md: "row" } }}>
                       <Box display={"flex"} flex="1.4" alignItems={"center"}>
                         <Box mr={"8px"} display={"flex"} zIndex={"-1"}>
                           <LogoRoundedIcon size="32px" color="black" />
@@ -650,7 +626,7 @@ const Content = ({ modalFlag, setModal }) => {
                           <CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"}></CustomButton>
                         </Box>
                       </Box>
-                    </Row02>
+                    </Row02> */}
                   </PoolsPart01>
                 </>
               </CenterSector02>
@@ -797,7 +773,7 @@ const Content = ({ modalFlag, setModal }) => {
                           </Row02>
                         );
                       })}
-                    {user_free_trvl_stake === 0 ? (
+                    {/* {user_free_trvl_stake === 0 ? (
                       <></>
                     ) : (
                       <Row02>
@@ -837,7 +813,7 @@ const Content = ({ modalFlag, setModal }) => {
                           </Box>
                         </Box>
                       </Row02>
-                    )}
+                    )} */}
                     <Row03></Row03>
                   </PoolsPart01>
                 </>
@@ -931,24 +907,24 @@ const Content = ({ modalFlag, setModal }) => {
               <Box mt={"40px"} lineHeight={"36px"}>
                 Stake your TRVL in our TRVL pool. You decide the locking duration and rewards are unlocked accordingly.
               </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
+              {/* <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>TRVL Contract:</Box>
                   <Box>{FREE_TRVL_CONTRACT.address.toString()}</Box>
                 </Box>
-              </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
+              </Box> */}
+              {/* <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>Total value locked:</Box>
                   <Box>${(total_free_trvl_stake * price).toFixed(2)}</Box>
                 </Box>
-              </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
+              </Box> */}
+              {/* <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>Pending rewards:</Box>
                   <Box>{total_free_trvl_reward} TRVL</Box>
                 </Box>
-              </Box>
+              </Box> */}
               <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>Pool APR:</Box>
@@ -961,12 +937,12 @@ const Content = ({ modalFlag, setModal }) => {
                   <Box>20.0%</Box>
                 </Box>
               </Box>
-              <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
+              {/* <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>My liquidity:</Box>
                   <Box>{user_free_trvl_stake} TRVL</Box>
                 </Box>
-              </Box>
+              </Box> */}
               <Box width={"100%"} maxWidth={"416px"} display={"flex"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <CustomButton
                   str={"Go back"}
@@ -1165,13 +1141,13 @@ const Content = ({ modalFlag, setModal }) => {
                 //   }
                 //   stake_lp();
                 // } 
-                else if (flag_flag_staking_modal === 2) {
-                  if (flag_spin_load === true) {
-                    NotificationManager.error("Please wait while processing.", "Hi.", 2000);
-                    return;
-                  }
-                  stake_free();
-                }
+                // else if (flag_flag_staking_modal === 2) {
+                //   if (flag_spin_load === true) {
+                //     NotificationManager.error("Please wait while processing.", "Hi.", 2000);
+                //     return;
+                //   }
+                //   stake_free();
+                // }
               }}
             >
               {flag_spin_load ? (
@@ -1273,7 +1249,7 @@ const Content = ({ modalFlag, setModal }) => {
           </Box>
         </ModalBox>
       </Modal>
-      <Modal open={open2} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+      {/* <Modal open={open2} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <ModalBox>
           <CancelBox01
             onClick={() => {
@@ -1329,7 +1305,7 @@ const Content = ({ modalFlag, setModal }) => {
             <CustomButton str={"Unstake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"} />
           </Box>
         </ModalBox>
-      </Modal>
+      </Modal> */}
       <NotificationContainer />
     </StyledComponent>
   );

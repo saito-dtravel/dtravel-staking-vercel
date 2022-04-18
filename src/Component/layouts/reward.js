@@ -25,7 +25,7 @@ const Reward = () => {
   const [rewards, set_rewards] = useState(0);
   const [escrows, set_escrows] = useState(null);
   const [escrows_count, set_escrows_count] = useState(0);
-  const [lp_rewards, set_lp_rewards] = useState(0);
+  // const [lp_rewards, set_lp_rewards] = useState(0);
   const [claim_rewards, set_claim_rewards] = useState(0);
   const [free_rewards, set_free_rewards] = useState(0);
   const [free_trvl_staked_value, set_free_trvl_staked_value] = useState(0);
@@ -34,7 +34,7 @@ const Reward = () => {
   const EMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.EMC_TOKEN, EMC_ABI, library.getSigner()): null), [library]);
   // const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_MC_ABI, library.getSigner()) : null), [library]);
   // const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, LP_SMC_ABI, library.getSigner()) : null), [library]);
-  const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
+  // const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
   const price = useGetPrice();
   const ONE_DAY = 1000 * 60 * 60 * 24;
 
@@ -54,7 +54,7 @@ const Reward = () => {
       get_escrow();
       get_pools();
       get_claimRewads();
-      get_free_trvl_staked_value();
+      // get_free_trvl_staked_value();
     }
   }, [active]);
 
@@ -102,10 +102,10 @@ const Reward = () => {
     try {
       let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
       // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
-      let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
+      // let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
       set_rewards((parseInt(t_rewards._hex) / Math.pow(10, 18)).toFixed(2));
       // set_lp_rewards((parseInt(t_lp_rewards._hex) / Math.pow(10, 18)).toFixed(2));
-      set_free_rewards((parseInt(free_rewards) / Math.pow(10, 18)).toFixed(2));
+      // set_free_rewards((parseInt(free_rewards) / Math.pow(10, 18)).toFixed(2));
     } catch (err) {
       console.log(err);
     }
@@ -169,15 +169,15 @@ const Reward = () => {
   //   }
   // };
 
-  const claim_free = async () => {
-    try {
-      let t_claim = await FREE_TRVL_CONTRACT.getReward();
-      await t_claim.wait();
-      NotificationManager.success("Successed. See your results.", "Hi.", 3000);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // const claim_free = async () => {
+  //   try {
+  //     let t_claim = await FREE_TRVL_CONTRACT.getReward();
+  //     await t_claim.wait();
+  //     NotificationManager.success("Successed. See your results.", "Hi.", 3000);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   const get_claimRewads = async () => {
     try {
@@ -193,14 +193,14 @@ const Reward = () => {
     console.log("mc_pools", mc_pools);
   };
 
-  const get_free_trvl_staked_value = async () => {
-    try {
-      let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
-      set_free_trvl_staked_value((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // const get_free_trvl_staked_value = async () => {
+  //   try {
+  //     let t_value = await FREE_TRVL_CONTRACT.balanceOf(account);
+  //     set_free_trvl_staked_value((parseInt(t_value._hex) / Math.pow(10, 18).toFixed(2)));
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   return (
     <StyledComponent>
@@ -298,7 +298,7 @@ const Reward = () => {
                 </Box>
               </Box>
             </Row03> */}
-            <Row03 gridRowGap={"16px"} sx={{ flexDirection: ["column", "column", "row"] }} marginBottom={"5%"}>
+            {/* <Row03 gridRowGap={"16px"} sx={{ flexDirection: ["column", "column", "row"] }} marginBottom={"5%"}>
               <Box display={"flex"} flex="1.4" alignItems={"center"}>
                 <Box mr={"8px"} display={"flex"}>
                   <Box display={"flex"}>
@@ -328,7 +328,7 @@ const Reward = () => {
                     {active && <CustomButton str={"Claim"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />}
                   </Box>
                 </Box>}
-            </Row03>
+            </Row03> */}
           </PoolsPart>
         </CenterSector01>
         <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
