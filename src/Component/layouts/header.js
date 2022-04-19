@@ -8,10 +8,10 @@ import { BiExit } from "react-icons/bi";
 import { LogoIcon, LogoRoundedIcon, ListIcon } from "../elements/icons";
 import { useGetPrice } from "../hooks/price";
 
-const Header = ({ setModal, wConnect }) => {
+const Header = ({ setModal, wConnect, active, setActive }) => {
   let navigate = useNavigate();
   const [flag_drop, set_drop] = useState(false);
-  const { account, active, deactivate } = useWeb3React();
+  const { account, deactivate } = useWeb3React();
   const [menuVisible, setMenuVisible] = useState(false);
   const [current_tab, set_current_tab] = useState(0);
   const price = useGetPrice();
@@ -94,7 +94,7 @@ const Header = ({ setModal, wConnect }) => {
               }
             }}
           >
-            {active === false ? "Connect Wallet" : account.slice(0, 6) + "..." + account.slice(-4)}
+            {account ? (active === false ? "Connect Wallet" : account.slice(0, 6) + "..." + account.slice(-4)) : "Connect Wallet"}
           </ConnectWallet>
           {flag_drop ? (
             <DropBox
@@ -103,6 +103,7 @@ const Header = ({ setModal, wConnect }) => {
               }}
               onClick={async () => {
                 // setModal(true);
+                setActive(false);
                 set_drop(false);
                 await deactivate(wConnect);
                 window.localStorage.removeItem("CurrentWalletConnect");

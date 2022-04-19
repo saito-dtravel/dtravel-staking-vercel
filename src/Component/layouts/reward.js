@@ -19,16 +19,16 @@ const Reward = () => {
   const [total_stake, set_total_stake] = useState(0);
   const [user_total_stake, set_user_total_stake] = useState(0);
   const [mc_apr, set_mc_apr] = useState(0);
-  const [lp_token_flag, set_lp_token_flag] = useState(false);
-  const [total_lp_stake, set_total_lp_stake] = useState(0);
+  // const [lp_token_flag, set_lp_token_flag] = useState(false);
+  // const [total_lp_stake, set_total_lp_stake] = useState(0);
   const [flag_account, set_flag_account] = useState(false);
   const [rewards, set_rewards] = useState(0);
   const [escrows, set_escrows] = useState(null);
   const [escrows_count, set_escrows_count] = useState(0);
   // const [lp_rewards, set_lp_rewards] = useState(0);
-  const [claim_rewards, set_claim_rewards] = useState(0);
-  const [free_rewards, set_free_rewards] = useState(0);
-  const [free_trvl_staked_value, set_free_trvl_staked_value] = useState(0);
+  // const [claim_rewards, set_claim_rewards] = useState(0);
+  // const [free_rewards, set_free_rewards] = useState(0);
+  // const [free_trvl_staked_value, set_free_trvl_staked_value] = useState(0);
   const MC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.MC_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
   const SMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
   const EMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.EMC_TOKEN, EMC_ABI, library.getSigner()): null), [library]);
@@ -45,6 +45,8 @@ const Reward = () => {
   useEffect(() => {
     if (active === false) {
       set_flag_account(false);
+      set_user_total_stake(0);
+      set_rewards(0);
     } else {
       set_flag_account(true);
       get_total_stake();

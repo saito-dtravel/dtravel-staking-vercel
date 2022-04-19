@@ -23,10 +23,12 @@ class Modal extends React.Component {
 
     CollectWallet = () => {
         if(window.ethereum){
-          window.ethereum.request({method: 'eth_requestAccounts'})
-          .then(result => {
-            console.log(result[0]);
-          })
+            console.log(window.ethereum.networkVersion);
+            window.ethereum.request({method: 'eth_requestAccounts'})
+            .then(result => {
+              console.log(result[0]);
+            })
+
         }else{
           console.error("Install MetaMask");
           console.log(window);

@@ -18,14 +18,17 @@ import { useNavigate } from "react-router-dom";
 import Web3 from "web3";
 import Slider from "@material-ui/core/Slider";
 import { makeStyles } from "@material-ui/core/styles";
-import { NotificationContainer, NotificationManager } from "react-notifications";
+import lib, { NotificationContainer, NotificationManager } from "react-notifications";
+import { InjectedConnector } from "@web3-react/injected-connector";
 import "react-notifications/lib/notifications.css";
 import { EtherIcon, LogoIcon, LogoRoundedIcon } from "../elements/icons";
+import { Web3Provider } from "@ethersproject/providers";
 import { useGetPrice } from "../hooks/price";
 
-const Content = ({ modalFlag, setModal }) => {
+const Content = ({ modalFlag, setModal, active, setActive }) => {
+  const chainId = process.env.REACT_APP_NETWORK == "mainnet" ? 1 : 97;
   let navigate = useNavigate();
-  const { account, active, library } = useWeb3React();
+  const { account, library } = useWeb3React();
   const [total_stake, set_total_stake] = useState(0);
   const [total_trvl_stake, set_total_trvl_stake] = useState(0);
   // const [total_free_trvl_stake, set_total_free_trvl_stake] = useState(0);
@@ -71,6 +74,11 @@ const Content = ({ modalFlag, setModal }) => {
   // const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
 
   const price = useGetPrice();
+  // const getLibrary = (provider) => {
+  //   const library = new Web3Provider(provider);
+  //   library.pollingInterval = 8000;
+  //   return setLibrary(library);
+  // }
   const useStyles = makeStyles((theme) => ({
     root: {
       width: 250,
@@ -253,6 +261,7 @@ const Content = ({ modalFlag, setModal }) => {
 
   const get_total_stake = async () => {
     try {
+      console.log(MC_Contract);
       const t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
       // const free_t_value = await FREE_TRVL_CONTRACT.totalSupply();
 
@@ -349,28 +358,42 @@ const Content = ({ modalFlag, setModal }) => {
   };
 
   const get_pools = async () => {
-    const trvl_pools = await SMC_Contract.getDepositsOf(account);
-    // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
-    // console.log('mc_pools', trvl_pools);
-    set_trvl_pools(trvl_pools);
+    try{
+      const trvl_pools = await SMC_Contract.getDepositsOf(account);
+      // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
+      // console.log('mc_pools', trvl_pools);
+      set_trvl_pools(trvl_pools);
+    }
+    catch(error){
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    if (active === false) {
-      set_user_total_stake(0);
-      set_user_total_rewards(0);
-    } else {
-      get_total_stake();
-      // get_total_lp_stake();
-      get_balance();
-      get_mc_apr();
-      get_rewards();
-      get_pools();
-      get_claimRewads();
-      // get_free_trvl_staked_value();
+    const effect = async() => {
+      if (active === false) {
+        set_user_total_stake(0);
+        set_user_total_rewards(0);
+      } else {
+        console.log("window", window.ethereum);
+        if(window.ethereum)
+        {
+          if(window.ethereum.networkVersion == chainId)
+          {
+            console.log("library", library);
+            get_total_stake();
+            get_balance();
+            get_mc_apr();
+            get_rewards();
+            get_pools();
+            get_claimRewads();
+          }
+        }
+      }
     }
+    effect();
     // get_total_staked_amount();
-  }, [active]);
+  }, [active, library]);
   const [detailInfor, setDetailInfor] = useState(null);
   return (
     <StyledComponent sx={{ marginTop: { xs: "64px", sm: "80px" } }}>

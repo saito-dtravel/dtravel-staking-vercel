@@ -1,5 +1,6 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
+import { InjectedConnector } from "@web3-react/injected-connector";
 import { Box, Modal } from "@material-ui/core";
 import Header from "./Component/layouts/header";
 import Content from "./Component/layouts/content";
@@ -15,8 +16,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
   // const handleOpen = () => setOpen(true);
+  const chainId = process.env.REACT_APP_NETWORK == "mainnet" ? 1 : 97;
   const handleClose = () => setOpen(false);
   const [open, setOpen] = useState(false);
+  const [active ,setActive] = useState(false);
   const [wConnect, set_wConnect] = useState();
 
   const DESKTOP_CONNECTORS = {
@@ -26,16 +29,39 @@ const App = () => {
     TrustWallet: trustWallet,
   };
   const walletConnectors = DESKTOP_CONNECTORS;
-  const { account, activate } = useWeb3React();
+  const { account, activate, library } = useWeb3React();
 
   const handleConnect = async (currentConnector) => {
-    console.log("wallet", currentConnector,walletConnectors[currentConnector]);
-    console.log("provider", window.ethereum.providers);
+    console.log("passed here");
     await activate(walletConnectors[currentConnector]);
     set_wConnect(walletConnectors[currentConnector]);
     window.localStorage.setItem("CurrentWalletConnect", currentConnector);
+    handleSwitch();
     handleClose();
+    setActive(true);
   };
+
+  const handleSwitch = async () => {
+    if (window.ethereum.networkVersion !== chainId){
+      console.log("window.ethereum", window.ethereum);
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${Number(chainId).toString(16)}` }],
+      }).then(() => {
+        
+        setActive(true);
+      });
+      console.log("You have succefully switched to Binance Test network");
+      await timeout(2000);
+      // getLibrary()
+      console.log("networkVersion", window.ethereum.networkVersion);
+    }
+  };
+
+  function timeout(delay) {
+    return new Promise( res => setTimeout(res, delay) );
+  }
+
   const handleDisconnect = () => {
     // deactivate();
     window.localStorage.removeItem("CurrentWalletConnect");
@@ -51,9 +77,9 @@ const App = () => {
     <>
       <Box maxWidth={"1440px"} width={"100%"} display={"flex"} flexDirection={"column"} alignItems="center" boxSizing={"border-box"} sx={{ px: { xs: "24px", sm: "64px", md: "108px" } }}>
         <BrowserRouter>
-          <Header setModal={setOpen} wConnect={wConnect}></Header>
+          <Header setModal={setOpen} wConnect={wConnect} active={active} setActive={setActive}></Header>
           <Routes>
-            <Route path="/" element={<Content modalFlag={open} setModal={setOpen} />} />
+            <Route path="/" element={<Content modalFlag={open} setModal={setOpen} library={library} active={active} setActive={setActive}/>} />
             <Route path="/reward" element={<Reward modalFlag={open} setModal={setOpen} />} />
           </Routes>
         </BrowserRouter>
