@@ -6,8 +6,8 @@ import { ethers } from "ethers";
 // const IS_MAINNET = process.env.REACT_APP_NETWORK === 'mainnet';
 const IS_MAINNET = false;
 
-const chainId = IS_MAINNET? 1 : 97;
-const rpcUrl = IS_MAINNET? "https://eth-mainnet.alchemyapi.io/v2/ccd5do8Kqn7QHjkrx74pwwlgzo10Rtvh/" : "https://data-seed-prebsc-1-s1.binance.org:8545/";
+const chainId = IS_MAINNET? 1 : 4;
+const rpcUrl = IS_MAINNET? "https://eth-mainnet.alchemyapi.io/v2/ccd5do8Kqn7QHjkrx74pwwlgzo10Rtvh/" : "https://rinkeby.infura.io/v3/0b31c4e492e64acc86ab55fd05d5c415";
 const scanUrl = IS_MAINNET? "https://bscscan.com/" : "https://testnet.bscscan.com/";
 
 // const BINANCE_MAINNET_PARAMS = {
@@ -44,7 +44,7 @@ const trustWallet = new InjectedConnector({
 const walletConnect = new WalletConnectConnector({
   rpc: {
     1: "https://eth-mainnet.alchemyapi.io/v2/ccd5do8Kqn7QHjkrx74pwwlgzo10Rtvh/",
-    97: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+    4: "https://rinkeby.infura.io/v3/0b31c4e492e64acc86ab55fd05d5c415/",
   },
   bridge: "https://bridge.walletconnect.org/",
   qrcode: true,
@@ -57,4 +57,4 @@ export const getLibrary = (provider) => {
   return library;
 };
 
-export { injected, trustWallet, CoinbaseWallet, walletConnect, binance_wallet };
+export { injected, trustWallet, CoinbaseWallet, walletConnect, binance_wallet, chainId };

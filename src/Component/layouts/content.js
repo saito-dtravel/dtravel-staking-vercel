@@ -7,8 +7,8 @@ import Reward01 from "../../assets/rewards.svg";
 import Mark01 from "../../assets/dtravle_mark01.png";
 import { useWeb3React } from "@web3-react/core";
 import { ethers } from "ethers";
-import { Moralis } from "moralis"
-import { CONTRACTS, serverUrl, appId, masterKey, TRANSACTION_SCAN_URL} from "../../utils/constants";
+
+import { CONTRACTS, TRANSACTION_SCAN_URL} from "../../utils/constants";
 import {requestAPICall} from "../../utils/helpers/apiService"
 import { MC_ABI, SMC_ABI, LP_MC_ABI, LP_SMC_ABI, FREE_TRVL_ABI } from "../../utils/abi";
 import CustomButton from "../elements/buttons";
@@ -23,10 +23,12 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import "react-notifications/lib/notifications.css";
 import { EtherIcon, LogoIcon, LogoRoundedIcon } from "../elements/icons";
 import { Web3Provider } from "@ethersproject/providers";
+import { chainId } from "../../utils/connectors";
 import { useGetPrice } from "../hooks/price";
 
-const Content = ({ modalFlag, setModal, active, setActive }) => {
-  const chainId = process.env.REACT_APP_NETWORK == "mainnet" ? 1 : 97;
+const Content = ({ modalFlag, setModal, active, setCurrent }) => {
+  const max_Duration = 52;
+  const peckshile_link = "https://peckshield.com/";
   let navigate = useNavigate();
   const { account, library } = useWeb3React();
   const [total_stake, set_total_stake] = useState(0);
@@ -121,6 +123,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
       }
       const stake_mc = await SMC_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
       await stake_mc.wait();
+      console.log(stake_mc);
       NotificationManager.success("Deposited successfully. See your result : " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
       "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + stake_mc.hash)});
       setTimeout(() => {
@@ -179,14 +182,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
 
   const get_balance = async () => {
     try{
-      console.log(serverUrl, appId, masterKey)
-      await Moralis.start({ serverUrl, appId, masterKey });
-      const tokens = await Moralis.Web3API.account.getTokenBalances({chain: "bsc testnet", address: account});
-      console.log("tokens", tokens);
-      let token_balance = 0;
-      tokens.map((token) => {
-        if(token.symbol == "TRVL") token_balance = token.balance;
-      })
+      let token_balance = await MC_Contract.balanceOf(account);
       set_balance(parseInt(token_balance) / Math.pow(10, 18));
     } catch(err)
     {
@@ -262,9 +258,10 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
   const get_total_stake = async () => {
     try {
       console.log(MC_Contract);
+      console.log(library.getSigner());
       const t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
       // const free_t_value = await FREE_TRVL_CONTRACT.totalSupply();
-
+      console.log(t_value);
       const user_t_value = await SMC_Contract.getTotalDeposit(account);
       // const user_t_free_value = await FREE_TRVL_CONTRACT.balanceOf(account);
       console.log(user_t_value);
@@ -371,6 +368,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
 
   useEffect(() => {
     const effect = async() => {
+      console.log("active", active);
       if (active === false) {
         set_user_total_stake(0);
         set_user_total_rewards(0);
@@ -401,7 +399,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
         <>
           <RewardsPart>
             <Box px={"40px"} borderLeft={"1px solid #0b2336"} sx={{ display: { xs: "none", sm: "none", md: "block" } }}>
-              <LeftSector01Text width={"128px"}>REWARDS</LeftSector01Text>
+              <LeftSector01Text width={"128px"}>STAKING</LeftSector01Text>
             </Box>
             <CenterSector01>
               <RewardText>
@@ -449,6 +447,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
                         <ConnectWalletBtn01
                           onClick={() => {
                             navigate("/reward");
+                            setCurrent(1);
                             window.scrollTo(0, 0);
                           }}
                         >
@@ -497,9 +496,13 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
                     <LeftText01>Pools Information</LeftText01>
                     <LeftText03>
                     These are the available staking pools. Staking contracts have been audited by {" "}
-                      <Box display={"inline"} style={{ textDecoration: "underline" }}>
+                      <PeckLink display={"inline"} style={{ textDecoration: "underline" }} 
+                      onClick={()=>{
+                        var win = window.open(peckshile_link, '_blank');
+                        win.focus();
+                      }}>
                         PeckShield
-                      </Box>
+                      </PeckLink>
                       .
                     </LeftText03>
                   </RewardText>
@@ -911,7 +914,18 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
                     setDetailInfor(null);
                   }}
                 />
-                <CustomButton str={"Stake"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"400"} bradius={"100px"} />
+                <CustomButton 
+                  str={"Stake"} 
+                  width={"100%"} height={"56px"} 
+                  color={"#D4EEE9"} 
+                  bgcolor={"#0B2336"} 
+                  fsize={"16px"} 
+                  fweight={"400"} 
+                  bradius={"100px"}
+                  onClick={() => {
+                    handleOpen();
+                    set_flag_staking_modal(0);
+                  }} />
               </Box>
             </Box>
             <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
@@ -1074,7 +1088,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
                     set_duration(e.target.value);
                   }}
                 />
-                <MaxBox01 onClick={() => {set_amount(balance)}}>max</MaxBox01>
+                <MaxBox01 onClick={() => {set_duration(max_Duration)}}>max</MaxBox01>
               </Box>
               <Box mt={"8px"} display={"flex"} fontFamily={"Radio Grotesk"} color={"#0B2336"}>
                 <Box>APR Based:</Box>
@@ -1111,7 +1125,7 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
               </Box>
               <Box mt={"8px"} display={"flex"} fontFamily={"Radio Grotesk"} color={"#0B2336"}>
                 <Box>Est APR:</Box>
-                <Box display={"flex"}>{free_apr}<PercentageText>%</PercentageText></Box>
+                <Box display={"flex"}>{mc_apr}<PercentageText>%</PercentageText></Box>
               </Box>
             </>
           )}
@@ -1153,6 +1167,11 @@ const Content = ({ modalFlag, setModal, active, setActive }) => {
                   if (amount <= 0)
                   {
                     NotificationManager.error("Staking amount should bigger than 0.", "Hi.", 2000);
+                    return;
+                  }
+                  if (locked && (duration <= 0 || duration > max_Duration))
+                  {
+                    NotificationManager.error("Wrong staking duration.", "Hi.", 2000);
                     return;
                   }
                   stake();
@@ -1358,6 +1377,7 @@ const DepositsPart = styled(Box)`
   display: flex;
   width: 100%;
   margin-top: 10%;
+  margin-bottom: 10%;
 `;
 
 const CancelBox01 = styled(Box)`
@@ -1869,7 +1889,7 @@ const LeftSector01 = styled(Box)`
 
 const LeftSector01Text = styled(Box)`
   display: flex;
-  margin-top: 15%;
+  margin-top: 20%;
   font-family: "Radio Grotesk";
   font-style: normal;
   font-weight: 400;
@@ -1906,26 +1926,11 @@ const RightSector01 = styled(Box)`
   flex: 1;
   justify-content: flex-end;
 `;
-// const SizeBox = styled(Box)`
-//     display: flex;
-//     position: absolute;
-//     right: 5%;
-//     top: 10%;
-//     justify-content: center;
-//     align-items: center;
-//     border-radius: 8px;
-//     padding: 8px 8px 6px;
-//     background: rgba(0,0,0,.3);
-//     color: white;
-//     cursor: pointer;
-//     z-index: 100;
-//     transition: .2s;
-//     &:hover{
-//         box-shadow: 0 10px 10px rgb(0 0 0 / 30%);
-//         cursor: pointer;
-//         transition: .2s;
-//         background: rgba(0,0,0,.5);
-//     }
-// `
+
+const PeckLink = styled(Box)`
+    &:hover{
+        cursor: pointer;
+    }
+`
 
 export default Content;

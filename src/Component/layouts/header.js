@@ -8,12 +8,11 @@ import { BiExit } from "react-icons/bi";
 import { LogoIcon, LogoRoundedIcon, ListIcon } from "../elements/icons";
 import { useGetPrice } from "../hooks/price";
 
-const Header = ({ setModal, wConnect, active, setActive }) => {
+const Header = ({ setModal, wConnect, active, setActive, current, setCurrent }) => {
   let navigate = useNavigate();
   const [flag_drop, set_drop] = useState(false);
   const { account, deactivate } = useWeb3React();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [current_tab, set_current_tab] = useState(0);
   const price = useGetPrice();
   return (
     <StyledComponent>
@@ -24,19 +23,19 @@ const Header = ({ setModal, wConnect, active, setActive }) => {
         onClick={() => {
           navigate("/");
           window.scrollTo(0, 0);
-          set_current_tab(0);
+          setCurrent(0);
         }}
       >
         <LogoIcon size={"40px"} color="#0B2336" />
         <Box fontSize={"20px"}>TRVL</Box>
       </Mark>
       <HambergerMenu bgcolor={"#d4eeea"} width={"100%"} flex={1} display={"flex"} alignItems={"center"} gridColumnGap={"56px"} gridRowGap={"16px"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, position: { xs: "absolute", sm: "absolute", md: "static" }, top: "100%" }} zIndex={11} p={"16px"} borderRadius={"0px 0px 10px 10px"} visible={menuVisible} boxSizing={"border-box"}>
-        {current_tab == 0 ? <>
+        {current == 0 ? <>
           <ActivedLinkButton
             onClick={() => {
               navigate("/");
               window.scrollTo(0, 0);
-              set_current_tab(0);
+              setCurrent(0);
             }}
           >
             Overview
@@ -47,19 +46,19 @@ const Header = ({ setModal, wConnect, active, setActive }) => {
             onClick={() => {
               navigate("/");
               window.scrollTo(0, 0);
-              set_current_tab(0);
+              setCurrent(0);
             }}
           >
             Overview
           </LinkButton>
         </>}
 
-        {current_tab == 1 ? <>
+        {current == 1 ? <>
           <ActivedLinkButton
             onClick={() => {
               navigate("/reward");
               window.scrollTo(0, 0);
-              set_current_tab(1);
+              setCurrent(1);
             }}
           >
             Rewards
@@ -70,7 +69,7 @@ const Header = ({ setModal, wConnect, active, setActive }) => {
             onClick={() => {
               navigate("/reward");
               window.scrollTo(0, 0);
-              set_current_tab(1);
+              setCurrent(1);
             }}
           >
             Rewards

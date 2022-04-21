@@ -12,30 +12,22 @@ const CONTRACTS = IS_MAINNET
     FREE_TRVL:'0x86E2a99F0F3dD01A480f8eaA935937111f8496d7',
     FREE_TRVL_STAKING: '0x86E2a99F0F3dD01A480f8eaA935937111f8496d7',
   } : {
-    MC_TOKEN: '0x592b6Fa61392846b19115148dcD35766e04F5F7d',
-    SMC_TOKEN: '0xC959ae9baf8FeD9cbe286614f1b93Db89fAa4677',
-    EMC_TOKEN: '0xAA25caEdEC129a4CC8dd527C7EA68d420C68CB89',
+    MC_TOKEN: '0x4E7442132eBCA4a6e1Ab15764082B3CBB384DE93',
+    SMC_TOKEN: '0x5e4630D999F04e4666E3aCE5e6386ad315B0a71a',
+    EMC_TOKEN: '0xd199a97C8fD3FBBFdbB446dB77De3DF001FA8EDE',
     // LP_TOKEN: '0x62d5ade17b32b23c7e848dab1a5a38efe41a65e0',
     // SMC_LP_Token: '0x3b50F9b7A88431ca000E0E6F6b9fe9BDa6ea0b6e',
     FREE_TRVL:'0x9008eDC655693C638027254eb4C47F79D9BC0E23',
-    FREE_TRVL_STAKING: '0x9008edc655693c638027254eb4c47f79d9bc0e23',
+    FREE_TRVL_STAKING: '0x3c94A131c839Aad8Fb689eC28e3f6c7694e5E0f1',
   }
 
-/* Moralis init code */
-const serverUrl = IS_MAINNET ? "https://2e7qseoizqxu.usemoralis.com:2053/server" : "https://ukqbtwjhqpvw.usemoralis.com:2053/server";
-const appId = IS_MAINNET ? "6aU6simMKJWjcumjYe2YUfMTk9s7QhiBW24e6kPZ" :"t0OjdfZQCncaZy2kGAJ7DrH9txcGJ8EFp09eIejQ";
-const masterKey = IS_MAINNET ? "5CHAojtAHTAIE6sF0r8WUEzDLDv47FB0oOLwAMBS" : "G0HiUC8bLx0MHBjcKzSnmKoJdAxo6ihwafmtz70f";
+const TRANSACTION_SCAN_URL = "https://rinkeby.etherscan.io/";
 
-const TRANSACTION_SCAN_URL = "https://testnet.bscscan.com/tx/";
-
-const HTTP_PROVIDER_URL = IS_MAINNET ? "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161" : "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
+const HTTP_PROVIDER_URL = IS_MAINNET ? "https://rinkeby.infura.io/v3/0b31c4e492e64acc86ab55fd05d5c415" : "https://rinkeby.infura.io/v3/0b31c4e492e64acc86ab55fd05d5c415";
 
 export {
   IS_MAINNET,
   CONTRACTS,
   HTTP_PROVIDER_URL,
   TRANSACTION_SCAN_URL,
-  serverUrl,
-  appId,
-  masterKey,
 }

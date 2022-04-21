@@ -1,5 +1,6 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
+import { chainId } from "./utils/connectors";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { Box, Modal } from "@material-ui/core";
 import Header from "./Component/layouts/header";
@@ -16,8 +17,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
   // const handleOpen = () => setOpen(true);
-  const chainId = process.env.REACT_APP_NETWORK == "mainnet" ? 1 : 97;
   const handleClose = () => setOpen(false);
+  const [current, setCurrent] = useState(0);
   const [open, setOpen] = useState(false);
   const [active ,setActive] = useState(false);
   const [wConnect, set_wConnect] = useState();
@@ -32,7 +33,6 @@ const App = () => {
   const { account, activate, library } = useWeb3React();
 
   const handleConnect = async (currentConnector) => {
-    console.log("passed here");
     await activate(walletConnectors[currentConnector]);
     set_wConnect(walletConnectors[currentConnector]);
     window.localStorage.setItem("CurrentWalletConnect", currentConnector);
@@ -42,19 +42,26 @@ const App = () => {
   };
 
   const handleSwitch = async () => {
-    if (window.ethereum.networkVersion !== chainId){
-      console.log("window.ethereum", window.ethereum);
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${Number(chainId).toString(16)}` }],
-      }).then(() => {
-        
-        setActive(true);
-      });
-      console.log("You have succefully switched to Binance Test network");
-      await timeout(2000);
-      // getLibrary()
-      console.log("networkVersion", window.ethereum.networkVersion);
+    try{
+      if (window.ethereum.networkVersion !== chainId){
+        console.log("window.ethereum", window.ethereum);
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${Number(chainId).toString(16)}` }],
+        }).then(() => {
+          
+          setActive(true);
+        });
+        console.log("You have succefully switched to Rinkeby Test network");
+        await timeout(2000);
+        // getLibrary()
+        console.log("networkVersion", window.ethereum.networkVersion);
+      }
+  
+    }
+    catch(err)
+    {
+      setActive(false);
     }
   };
 
@@ -77,10 +84,10 @@ const App = () => {
     <>
       <Box maxWidth={"1440px"} width={"100%"} display={"flex"} flexDirection={"column"} alignItems="center" boxSizing={"border-box"} sx={{ px: { xs: "24px", sm: "64px", md: "108px" } }}>
         <BrowserRouter>
-          <Header setModal={setOpen} wConnect={wConnect} active={active} setActive={setActive}></Header>
+          <Header setModal={setOpen} wConnect={wConnect} active={active} setActive={setActive} current={current} setCurrent={setCurrent}></Header>
           <Routes>
-            <Route path="/" element={<Content modalFlag={open} setModal={setOpen} library={library} active={active} setActive={setActive}/>} />
-            <Route path="/reward" element={<Reward modalFlag={open} setModal={setOpen} />} />
+            <Route path="/" element={<Content modalFlag={open} setModal={setOpen} library={library} active={active} setActive={setActive} setCurrent={setCurrent}/>} />
+            <Route path="/reward" element={<Reward active={active}/>} />
           </Routes>
         </BrowserRouter>
         <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
