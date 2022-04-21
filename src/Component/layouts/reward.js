@@ -31,9 +31,9 @@ const Reward = ({active}) => {
   // const [claim_rewards, set_claim_rewards] = useState(0);
   // const [free_rewards, set_free_rewards] = useState(0);
   // const [free_trvl_staked_value, set_free_trvl_staked_value] = useState(0);
-  const MC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.MC_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
-  const SMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
-  const EMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.EMC_TOKEN, EMC_ABI, library.getSigner()): null), [library]);
+  const TRVL_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.TRVL_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
+  const STRVL_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.STAKED_TRVL_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
+  const ETRVL_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.ESCROW_TRVL_TOKEN, EMC_ABI, library.getSigner()): null), [library]);
   // const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_MC_ABI, library.getSigner()) : null), [library]);
   // const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, LP_SMC_ABI, library.getSigner()) : null), [library]);
   // const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
@@ -102,8 +102,8 @@ const Reward = ({active}) => {
 
   const get_mc_apr = async () => {
     try {
-      let locked1 = await SMC_Contract.getTotalDeposit(account);
-      let total = await SMC_Contract.balanceOf(account);
+      let locked1 = await STRVL_Contract.getTotalDeposit(account);
+      let total = await STRVL_Contract.balanceOf(account);
       let apr = ((total / locked1) * 100).toFixed(2);
       set_mc_apr(apr);
     } catch (err) {
@@ -113,7 +113,7 @@ const Reward = ({active}) => {
 
   const get_rewards = async () => {
     try {
-      let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
+      let t_rewards = await STRVL_Contract.withdrawableRewardsOf(account);
       // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
       // let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
       set_rewards((parseInt(t_rewards._hex) / Math.pow(10, 18)).toFixed(2));
@@ -126,8 +126,8 @@ const Reward = ({active}) => {
 
   const get_escrow = async () => {
     try{
-      console.log("escrow", EMC_Contract);
-      let _escrows = await EMC_Contract.getDepositsOf(account);
+      console.log("escrow", ETRVL_Contract);
+      let _escrows = await ETRVL_Contract.getDepositsOf(account);
       // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
       console.log("_escrows", _escrows.length);
       set_escrows(_escrows);
@@ -141,8 +141,8 @@ const Reward = ({active}) => {
 
   const get_total_stake = async () => {
     try {
-      let t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
-      let user_t_value = await SMC_Contract.getTotalDeposit(account);
+      let t_value = await TRVL_Contract.balanceOf(CONTRACTS.STAKED_TRVL_TOKEN);
+      let user_t_value = await STRVL_Contract.getTotalDeposit(account);
       set_total_stake((parseInt(t_value._hex) / Math.pow(10, 18)).toFixed(2));
       set_user_total_stake((parseInt(user_t_value._hex) / Math.pow(10, 18)).toFixed(2));
     } catch (err) {
@@ -161,7 +161,7 @@ const Reward = ({active}) => {
 
   const claim = async () => {
     try {
-      let t_claim = await SMC_Contract.claimRewards(account);
+      let t_claim = await STRVL_Contract.claimRewards(account);
       let t_claim_mc = await t_claim.wait();
       get_total_stake();
       get_claimRewads();
@@ -209,7 +209,7 @@ const Reward = ({active}) => {
 
   const get_pools = async () => {
     try{
-      const mc_pools = await SMC_Contract.getDepositsOf(account);
+      const mc_pools = await STRVL_Contract.getDepositsOf(account);
       console.log("mc_pools", mc_pools);
     }
     catch(err){
@@ -237,17 +237,17 @@ const Reward = ({active}) => {
             <Box fontFamily={"Reckless Neue"} sx={{ fontSize: { xs: "56px", sm: "60px", md: "64px" } }}>
               Rewards Details
             </Box>
-            <Box display={"flex"} marginTop={"20px"}>
+            {/* <Box display={"flex"} marginTop={"20px"}>
               {current_tab === 0 ? 
                 (<ActivedTabButton onClick={() => {set_current_tab(0)}}>LOCKED REWARDS</ActivedTabButton>) : 
                 (<TabButton onClick={() => {set_current_tab(0)}}>LOCKED REWARDS</TabButton>)}
               {current_tab === 1 ?
                 (<ActivedTabButton onClick={() => {set_current_tab(1)}}>UNLOCKED REWARD</ActivedTabButton>) :
                 (<TabButton onClick={() => {set_current_tab(1)}}>UNLOCKED REWARD</TabButton>)}
-            </Box>
+            </Box> */}
             
             <RightText01 display={"flex"} marginTop={"40px"}>
-              The claimable staking rewards can be claimed at any time you want.
+              Staking rewards enter a 12 month vesting period after claiming. TRVL tokens are non-transferable and only used for accounting purposes..
             </RightText01>
             <RightText01 display={"flex"} marginTop={"40px"} sx={{ flexDirection: ["column", "column", "row"] }}>
               <Box display={"inline"} fontWeight={"bold"}>
@@ -256,7 +256,7 @@ const Reward = ({active}) => {
               {timerComponents}
             </RightText01>
           </RewardText>
-          {current_tab === 0 ? (
+          
             <PoolsPart>
               <Row01 gridRowGap={"16px"} sx={{ display: { xs: "none", sm: "none", md: "flex" } }}>
                 <Box display={"flex"} flex="1.4" alignItems={"center"}>
@@ -364,80 +364,94 @@ const Reward = ({active}) => {
                   </Box>}
               </Row03> */}
             </PoolsPart>            
-          ):
-          (          
-            <PoolsPart>
-              <Row01 gridRowGap={"16px"} sx={{ display: { xs: "none", sm: "none", md: "flex" } }}>
-                <Box display={"flex"} flex="1.4" alignItems={"center"}>
-                  Token
-                </Box>
-                <Box display={"flex"} flex="1" alignItems={"center"}>
-                  Amount
-                </Box>
-                <Box display={"flex"} flex="1" alignItems={"center"}>
-                  Dollar Value
-                </Box>
-                <Box display={"flex"} flex="1" alignItems={"center"}>
-                  Status
-                </Box>
-                <Box display={"flex"} flex="1" alignItems={"center"}>
-                  Unlock Time
-                </Box>
-                <Box display={"flex"} flex="0.5" alignItems={"center"}></Box>
-              </Row01>
-              {escrows && escrows.map((escrow) => {
-                return(
-                  <Row02 gridRowGap={"16px"} sx={{ flexDirection: ["column", "column", "row"], borderTop: ["none", "none", "1px solid #0b2336"] }}>
-                    <Box display={"flex"} flex="1.4" alignItems={"center"}>
-                      <Box mr={"8px"} display={"flex"}>
-                        <Box display={"flex"}>
-                          <LogoRoundedIcon size="32px" color="black" />
-                        </Box>
-                      </Box>
-                      ESCROW <br/>TOKEN
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"}>
-                      {(parseInt(escrow.amount._hex) / Math.pow(10, 18)).toFixed(2)} ETRVL
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"}>
-                      $ {(parseInt(escrow.amount._hex) / Math.pow(10, 18) * price).toFixed(2)}
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"}>
-                      {Date.now() > new Date(parseInt(escrow.end._hex) * 1000) ? "Unlocked": "Locked"}
-                    </Box>
-                    <Box display={"flex"} flex="1" alignItems={"center"}>
-                    {new Date(parseInt(escrow.end._hex) * 1000).toLocaleDateString("en-US") + " " + new Date(parseInt(escrow.end._hex) * 1000).toLocaleTimeString("en-US")}
-                    </Box>
-                    { Date.now() > new Date(parseInt(escrow.end._hex) * 1000) ? (
-                      <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
-                        <Box
-                          display={"1"}
-                          width={"100%"}
-                          minWidth={"85px"}
-                          onClick={() => {
-                            unlock();
-                          }}
-                        >
-                          <CustomButton str={"Unlock"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
-                        </Box>
-                      </Box>
-                    ):(
-                      <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
-                      </Box>
-                    )}
-                    
-                  </Row02>
-                )
-              })}
-              
-            </PoolsPart>
-          )}
+
 
         </CenterSector01>
         <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
       </RewardsPart>
      
       <NotificationContainer />
+
+      {(active && escrows_count > 0) && <><LockRewardsPart pb={"100px"}>
+        <Box px={"40px"} borderLeft={"1px solid #0b2336"} sx={{ display: { xs: "none", sm: "none", md: "block" } }}>
+          <LeftSector01Text width={"128px"}>LOCKED REWARDS</LeftSector01Text>
+        </Box>
+        <CenterSector01>
+          <RewardText>
+            <Box fontFamily={"Reckless Neue"} sx={{ fontSize: { xs: "56px", sm: "60px", md: "64px" } }}>
+              Locked Rewards Details
+            </Box>
+          </RewardText>
+          <PoolsPart>
+            <Row01 gridRowGap={"16px"} sx={{ display: { xs: "none", sm: "none", md: "flex" } }}>
+              <Box display={"flex"} flex="1.4" alignItems={"center"}>
+                Token
+              </Box>
+              <Box display={"flex"} flex="1" alignItems={"center"}>
+                Amount
+              </Box>
+              <Box display={"flex"} flex="1" alignItems={"center"}>
+                Dollar Value
+              </Box>
+              <Box display={"flex"} flex="1" alignItems={"center"}>
+                Status
+              </Box>
+              <Box display={"flex"} flex="1" alignItems={"center"}>
+                Unlock Time
+              </Box>
+              <Box display={"flex"} flex="0.5" alignItems={"center"}></Box>
+            </Row01>
+            {escrows && escrows.map((escrow) => {
+              return(
+                <Row02 gridRowGap={"16px"} sx={{ flexDirection: ["column", "column", "row"], borderTop: ["none", "none", "1px solid #0b2336"] }}>
+                  <Box display={"flex"} flex="1.4" alignItems={"center"}>
+                    <Box mr={"8px"} display={"flex"}>
+                      <Box display={"flex"}>
+                        <LogoRoundedIcon size="32px" color="black" />
+                      </Box>
+                    </Box>
+                    ESCROW <br/>TOKEN
+                  </Box>
+                  <Box display={"flex"} flex="1" alignItems={"center"}>
+                    {(parseInt(escrow.amount._hex) / Math.pow(10, 18)).toFixed(2)} ETRVL
+                  </Box>
+                  <Box display={"flex"} flex="1" alignItems={"center"}>
+                    $ {(parseInt(escrow.amount._hex) / Math.pow(10, 18) * price).toFixed(2)}
+                  </Box>
+                  <Box display={"flex"} flex="1" alignItems={"center"}>
+                    {Date.now() > new Date(parseInt(escrow.end._hex) * 1000) ? "Unlocked": "Locked"}
+                  </Box>
+                  <Box display={"flex"} flex="1" alignItems={"center"}>
+                  {new Date(parseInt(escrow.end._hex) * 1000).toLocaleDateString("en-US") + " " + new Date(parseInt(escrow.end._hex) * 1000).toLocaleTimeString("en-US")}
+                  </Box>
+                  { Date.now() > new Date(parseInt(escrow.end._hex) * 1000) ? (
+                    <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                      <Box
+                        display={"1"}
+                        width={"100%"}
+                        minWidth={"85px"}
+                        onClick={() => {
+                          unlock();
+                        }}
+                      >
+                        <CustomButton str={"Unlock"} width={"100%"} height={"56px"} color={"#D4EEE9"} bgcolor={"#0B2336"} fsize={"16px"} fweight={"600"} bradius={"100px"} />
+                      </Box>
+                    </Box>
+                  ):(
+                    <Box display={"flex"} flex="0.5" alignItems={"center"} justifyContent={"center"} width={"100%"}>
+                    </Box>
+                  )}
+                  
+                </Row02>
+              )
+            })}
+            
+          </PoolsPart>
+        </CenterSector01>
+        <Box flex={1} sx={{ display: { xs: "none", sm: "none", md: "block" } }}></Box>
+      </LockRewardsPart></>}
+      <NotificationContainer />
+
     </StyledComponent>
   );
 };

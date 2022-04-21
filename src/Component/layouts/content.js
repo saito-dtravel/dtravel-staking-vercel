@@ -69,8 +69,8 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
   const [flag_spin_load_free, set_spin_load_free] = useState(false);
   const [trvl_pools, set_trvl_pools] = useState(null);
   const [trvllp_pools, set_trvllp_pools] = useState(null);
-  const MC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.MC_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
-  const SMC_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
+  const TRVL_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.TRVL_TOKEN, MC_ABI, library.getSigner()) : null), [library]);
+  const STRVL_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.STAKED_TRVL_TOKEN, SMC_ABI, library.getSigner()) : null), [library]);
   // const LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.LP_TOKEN, LP_MC_ABI, library.getSigner()) : null), [library]);
   // const SMC_LP_Contract = useMemo(() => (library ? new ethers.Contract(CONTRACTS.SMC_LP_Token, LP_SMC_ABI, library.getSigner()) : null), [library]);
   // const FREE_TRVL_CONTRACT = useMemo(() => (library ? new ethers.Contract(CONTRACTS.FREE_TRVL, FREE_TRVL_ABI, library.getSigner()) : null), [library]);
@@ -113,7 +113,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
     try {
       set_spin_load(true);
       let amount_wei = amount * Math.pow(10, 18);
-      const approve = await MC_Contract.approve(CONTRACTS.SMC_TOKEN, "0x" + amount_wei.toString(16));
+      const approve = await TRVL_Contract.approve(CONTRACTS.STAKED_TRVL_TOKEN, "0x" + amount_wei.toString(16));
       await approve.wait();
       var t_duration;
       if (locked === true) {
@@ -121,7 +121,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
       } else {
         t_duration = 0;
       }
-      const stake_mc = await SMC_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
+      const stake_mc = await STRVL_Contract.deposit("0x" + amount_wei.toString(16), "0x" + t_duration.toString(16), account);
       await stake_mc.wait();
       console.log(stake_mc);
       NotificationManager.success("Deposited successfully. See your result : " + stake_mc.hash.toString().slice(0, 10) + "..." + stake_mc.hash.toString().slice(-4), 
@@ -182,7 +182,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const get_balance = async () => {
     try{
-      let token_balance = await MC_Contract.balanceOf(account);
+      let token_balance = await TRVL_Contract.balanceOf(account);
       set_balance(parseInt(token_balance) / Math.pow(10, 18));
     } catch(err)
     {
@@ -194,7 +194,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
   //   try {
   //     set_spin_load(true);
   //     let amount_wei = amount * Math.pow(10, 18);
-  //     const approve = await MC_Contract.approve(CONTRACTS.FREE_TRVL, "0x" + amount_wei.toString(16));
+  //     const approve = await TRVL_Contract.approve(CONTRACTS.FREE_TRVL, "0x" + amount_wei.toString(16));
   //     await approve.wait();
   //     const stake_mc = await FREE_TRVL_CONTRACT.stake("0x" + amount_wei.toString(16));
   //     await stake_mc.wait();
@@ -245,7 +245,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const get_rewards = async () => {
     try {
-      let t_rewards = await SMC_Contract.withdrawableRewardsOf(account);
+      let t_rewards = await STRVL_Contract.withdrawableRewardsOf(account);
       // let free_rewards = await FREE_TRVL_CONTRACT.earned(account);
       // let t_lp_rewards = await SMC_LP_Contract.withdrawableRewardsOf(account);
       // set_user_total_rewards(((parseInt(t_rewards._hex) + parseInt(free_rewards)) / Math.pow(10, 18)).toFixed(2));
@@ -257,12 +257,11 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const get_total_stake = async () => {
     try {
-      console.log(MC_Contract);
-      console.log(library.getSigner());
-      const t_value = await MC_Contract.balanceOf(CONTRACTS.SMC_TOKEN);
+      // console.log(library.getSigner());
+      const t_value = await TRVL_Contract.balanceOf(CONTRACTS.STAKED_TRVL_TOKEN);
       // const free_t_value = await FREE_TRVL_CONTRACT.totalSupply();
       console.log(t_value);
-      const user_t_value = await SMC_Contract.getTotalDeposit(account);
+      const user_t_value = await STRVL_Contract.getTotalDeposit(account);
       // const user_t_free_value = await FREE_TRVL_CONTRACT.balanceOf(account);
       console.log(user_t_value);
       // set_total_stake(((parseInt(t_value._hex) + parseInt(free_t_value))/ Math.pow(10, 18)).toFixed(2));
@@ -288,7 +287,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const unstake = async (index) => {
     try {
-      const unstake_mc = await SMC_Contract.withdraw(index, account);
+      const unstake_mc = await STRVL_Contract.withdraw(index, account);
       await unstake_mc.wait();
       NotificationManager.success("Unstaked successfully.  See your result: " + unstake_mc.hash.toString().slice(0, 10) + "..." + unstake_mc.hash.toString().slice(-4), 
       "Hi.", 6000, () => {window.open(TRANSACTION_SCAN_URL + unstake_mc.hash)});
@@ -340,7 +339,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const get_claimRewads = async () => {
     try {
-      let claim_rewards1 = await SMC_Contract.totalClaimReward();
+      let claim_rewards1 = await STRVL_Contract.totalClaimReward();
       // let claim_rewards2 = await FREE_TRVL_CONTRACT.totalReward();
       // let lp_claim_rewards = await SMC_LP_Contract.totalClaimReward();
       // let total = ((parseInt(claim_rewards1._hex) + parseInt(lp_claim_rewards)) / Math.pow(10, 18)).toFixed(2);
@@ -356,7 +355,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
 
   const get_pools = async () => {
     try{
-      const trvl_pools = await SMC_Contract.getDepositsOf(account);
+      const trvl_pools = await STRVL_Contract.getDepositsOf(account);
       // const trvllp_pools = await SMC_LP_Contract.getDepositsOf(account);
       // console.log('mc_pools', trvl_pools);
       set_trvl_pools(trvl_pools);
@@ -866,7 +865,7 @@ const Content = ({ modalFlag, setModal, active, setCurrent }) => {
               <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>
                 <Box display={"flex"} justifyContent={"space-between"} sx={{ flexDirection: { xs: "column", sm: "column", md: "row" }, gridGap: { xs: "4px", sm: "8px", md: "16px" } }} style={{ wordBreak: "break-word" }}>
                   <Box fontWeight={"bold"}>TRVL Contract:</Box>
-                  <Box>{SMC_Contract.address.toString()}</Box>
+                  <Box>{STRVL_Contract.address.toString()}</Box>
                 </Box>
               </Box>
               <Box fontSize={"22px"} display={"flex"} flexDirection={"column"} gridGap={"16px"} sx={{ mt: { xs: "16px", sm: "24px", md: "32px" } }}>

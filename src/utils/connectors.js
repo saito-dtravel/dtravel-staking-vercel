@@ -3,12 +3,12 @@ import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import { WalletLinkConnector } from '@web3-react/walletlink-connector';
 import { ethers } from "ethers";
 
+import { HTTP_PROVIDER_URL } from "./constants"
 // const IS_MAINNET = process.env.REACT_APP_NETWORK === 'mainnet';
 const IS_MAINNET = false;
 
 const chainId = IS_MAINNET? 1 : 4;
-const rpcUrl = IS_MAINNET? "https://eth-mainnet.alchemyapi.io/v2/ccd5do8Kqn7QHjkrx74pwwlgzo10Rtvh/" : "https://rinkeby.infura.io/v3/0b31c4e492e64acc86ab55fd05d5c415";
-const scanUrl = IS_MAINNET? "https://bscscan.com/" : "https://testnet.bscscan.com/";
+const rpcUrl = HTTP_PROVIDER_URL;
 
 // const BINANCE_MAINNET_PARAMS = {
 //   chainId: chainId,
@@ -33,7 +33,7 @@ const binance_wallet = new InjectedConnector({
 
 const CoinbaseWallet = new WalletLinkConnector({
   url: rpcUrl,
-  appName: 'Formation App',
+  appName: 'Dtravel App',
   appLogoUrl: ''
 })
 
